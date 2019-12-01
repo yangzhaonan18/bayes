@@ -14,8 +14,12 @@ for i in range(3):
 		print(alpha, beta)
 		alpha_s[i][j] = alpha
 		beta_s[i][j] = beta
+
+print("\nalpha_s is:")
 print(alpha_s)
+
+print("\nbeta_s is:")
 print(beta_s)
 
-print(type(alpha_s))
+# print(type(alpha_s))
 

@@ -4,8 +4,8 @@ from scipy import stats
 from matplotlib import style
 
 style.use('ggplot')
-alphas = [0.6, 0.15, 0.15]
-betas = [0.14 * 0.14, 0.15 * 0.15, 0.1 * 0.1 ]
+alphas = [6.7, 1.8, 1.7]
+betas = [4.5, 5.5, 10 ]
 x = np.linspace(0, 1, 100)
 f, ax = plt.subplots(2, len(alphas), sharex=True, sharey=True)
 for i in range(len(alphas)):
