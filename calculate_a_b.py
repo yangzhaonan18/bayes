@@ -1,13 +1,26 @@
 import numpy as np
+import math
 
 
 
+def judge_slop_type(cell_i, cell_j, cell_side_length=24, degree=20):
+    # use 0 1 2 represents: uphill, no slope, and downhill
+    # cell_j[3] is the elevation of the cell
+    elevation_diff = cell_j[3] - cell_i[3]
+    pi = 3.1416
+    threshold  = cell_side_length * math.sin(20 * (pi / 180))
+    if elevation_diff > threshold:
+        slop_type = 0  # uphill
+    elif elevation_diff >= - threshold and  elevation_diff <= threshold:
+        slop_type = 1  # no slope
+    elif elevation_diff <  - threshold; 
+        slop_type = 2  # downhill
+    return slop_type
 
-def  normalize(p0, p1, p2):
+
+def  normalize_probability(p0, p1, p2):
     total = p0 + p1 + p2
     return p0 / total, p1 / total, p2 / total
-
-
 
 
 def calculate_alphas_betas(ex_s, var_s):
