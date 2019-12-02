@@ -1,6 +1,15 @@
 import numpy as np
 
 
+
+
+def  normalize(p0, p1, p2):
+    total = p0 + p1 + p2
+    return p0 / total, p1 / total, p2 / total
+
+
+
+
 def calculate_alphas_betas(ex_s, var_s):
     alphas = np.zeros_like(ex_s)
     betas = np.zeros_like(var_s)
@@ -107,8 +116,25 @@ if __name__  == "__main__":
     # S_sample  represents the probability of following a certain local slope type Si
     S_sample = np.random.beta(S_alpha, S_beta)
 
-    print(V_sample)
     print(T_sample)
+    print(V_sample)
     print(S_sample)
+    cell_index = 0
+    cell_state = [0, 0, 120, index]
+    # cell_state[0] use 0, 1, 2 represents topography:  lake, plain, hill 
+    # cell_state[1] use 0, 1, 2 represents vegetation density: sparse, medium,dense
+    # cell_state[2] use float value represents elevation
+    # cell_state[3] use int represents the index of this cell
+
+
+
+
+
+
+
+
+    X = state
+
+
 
 
