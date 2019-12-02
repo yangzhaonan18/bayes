@@ -4,10 +4,13 @@ import numpy as np
 def calculate_alphas_betas(ex_s, var_s):
     alphas = np.zeros_like(ex_s)
     betas = np.zeros_like(var_s)
+    dimension = len(list(alphas.shape))
+    print("########")
     print("The shape of the transition matrix is", alphas.shape)
-    print(len(list(alphas.shape)))
+    print("dimension is ", dimension)
+    
 
-    if len(list(alphas.shape))  == 2:
+    if dimension  == 2:
         for i in range(3):
             for j in range(3):
                 x = ex_s[i][j]
@@ -17,7 +20,7 @@ def calculate_alphas_betas(ex_s, var_s):
                 alphas[i][j] = alpha
                 betas[i][j] = beta
 
-    elif len(list(alphas.shape))  == 1:
+    elif dimension  == 1:
         for i in range(3):
             x = ex_s[i]
             y = var_s[i]
@@ -71,13 +74,16 @@ if __name__  == "__main__":
     topography_alphas, topography_betas  = calculate_alphas_betas(topography_exs, topography_vars)
     vegetation_alphas, vegetation_betas  = calculate_alphas_betas(vegetation_exs, vegetation_vars)
     elevation_alphas, elevation_betas  = calculate_alphas_betas(elevation_exs, elevation_vars)
-    print("\nAlpha_s is:")
-    print("topography_alphas = \n", topography_alphas)
-    print("vegetation_alphas = \n", vegetation_alphas)
-    print("elevation_alphas = \n", elevation_alphas)
+    print("\n\n###     Alpha_s list below :  ###")
+    print("\ntopography_alphas = \n", topography_alphas)
+    print("\nvegetation_alphas = \n", vegetation_alphas)
+    print("\nelevation_alphas = \n", elevation_alphas)
+
+    print("\n\n###     Beta_s list below :  ###")
+    print("\ntopography_betas = \n", topography_betas)
+    print("\nvegetation_betas = \n", vegetation_betas)
+    print("\nelevation_betas = \n", elevation_betas)
+    print("\n")
 
 
-    print("\nBeta_s is:")
-    print("topography_betas = \n", topography_betas)
-    print("vegetation_betas = \n", vegetation_betas)
-    print("elevation_betas = \n", elevation_betas)
+
