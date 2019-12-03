@@ -1,28 +1,35 @@
 import gdal 
+import numpy as np
+
 # import geos
 
-geo = gdal.Open('data/clip_USGS_NED_13_n40w112_IMG/clip_USGS_NED_13_n40w112_IMG.img') 
-data = geo.ReadAsArray() 
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+
+
+geo = gdal.Open('data_TVE/E.img') 
+data = geo.ReadAsArray()
+data = data.T
 # print(repr(data) )
 # print(data)
-print(data.shape)
+print("data.shape = ", data.shape)
  
-h, w = data.shape
- 
+h, w = data.shape  # 35 67 
 
 
-from matplotlib import pyplot as plt
-import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
+
+
 
 fig = plt.figure()
 ax = Axes3D(fig)
 # X = np.arange(-4, 4, 0.25)
-X = np.arange(0, h, 1)
-Y = np.arange(0, w, 1)
+
+X = np.arange(0, w, 1)
+Y = np.arange(0, h, 1)
+
 X, Y = np.meshgrid(X, Y)
 print(X.shape)
-data = data.T
+# data = data.T
 Z = np.array(data)
 print(Z.shape)
 # R = np.sqrt(X**2 + Y**2)
