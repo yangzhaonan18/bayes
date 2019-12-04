@@ -4,17 +4,7 @@ import math
 
 from utils import Transfer_matrix, Build_State, find_7index
 
-def combine_probilities(cell_state_current, cell_state_neighbor):
-    Vi = 0
-    Vj = 0
-
-
-
-
-
-def find_state_7neighbors(states, index):
-    # 7neighbors_states = 0
-    pass  
+ 
 
 # judge_slop_type(current_E_value, next_E_value)
 def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, degree=15):
@@ -25,7 +15,7 @@ def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, de
     # print("elevation_diff = ", elevation_diff)  # 5 m
     pi = 3.1416
     threshold  = between_cells_distance * math.sin(degree * (pi / 180))
-    print("elevation_diff threshold = ", threshold)  # 8
+    # print("elevation_diff threshold = ", threshold)  # 8
     if elevation_diff > threshold:
         slop_type = 0  # uphill
     elif elevation_diff >= - threshold and  elevation_diff <= threshold:
@@ -35,7 +25,7 @@ def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, de
     return slop_type
 
 
-def  normalize_probilities(probability_list):
+def normalize_probilities(probability_list):
     # Normalize the probability values, make sure the sum of the probabilities is 1
     length = len(probability_list)
     probability_list_new = [0 for i in range(length)]
@@ -101,9 +91,9 @@ if __name__ ==  "__main__":
 
     
 
-    Ti, Tj = 2, 2
-    Vi, Vj = 2, 2
-    Si = 2
+    # Ti, Tj = 2, 2
+    # Vi, Vj = 2, 2
+    # Si = 2
 
 
     # index = 0
@@ -127,34 +117,34 @@ if __name__ ==  "__main__":
     # build_State.show_E_img3D()
     states_ij = build_State.TVE_states_ij
     states_index = build_State.TVE_states_index
-
-    print(states_ij[0][0])
-    print(states_ij[10][10])
-    print(states_ij[31][18])
-    print(states_index[0])
-
+ 
     index_input = 100
-
     ij_7s, index_7s = find_7index(index_input) # cell index is 100
-
     states_7s = find_7state(states_index, index_7s)
-
     current_state = states_7s[0]
-    for i in range(1, 7, 1):
+    direction_probilities = [ 0 for i in range(7)]
+
+    for i in range(0, 7, 1):
         next_state = states_7s[i]
         current_T_type, next_T_type = current_state[0], next_state[0]
         current_V_type, next_V_type = current_state[1], next_state[1]
         current_E_value, next_E_value = current_state[2], next_state[2]
-        print("current_E_value, next_E_value = ", current_E_value, next_E_value)
-
+        # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
         slop_type = judge_slop_type(current_E_value, next_E_value)
-
         p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
         p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
         p_S = transfer_matrix.find_beta_sample("slope", slop_type)
-        print(p_T, p_V, p_S)
-
-
+        combine_probilities = p_T * p_V * p_S
+        direction_probilities[i] = combine_probilities 
+    direction_probilities_normalized = normalize_probilities(direction_probilities)  # (7,)
+    dpn = direction_probilities_normalized
+    print("\n7 direction probilities after normalized = \n", dpn)
+    max_direction = dpn.index(max(dpn))
+    directions = [0 for i in range(7)]
+    directions[max_direction] = 1
+    likelihood = dpn[max_direction]
+    print("\ndirections = \n", directions)
+    print("\nlikelihood = \n", likelihood)
         
 
 
@@ -162,10 +152,7 @@ if __name__ ==  "__main__":
 
 
 
-
-
     # print("\nstates_7s = \n", states_7s)
-
     # print("\ninput_index = ", input_index)
     # print("output_ij = ", ij_7s)
     # print("index_7s = ", index_7s)

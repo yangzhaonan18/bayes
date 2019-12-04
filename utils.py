@@ -8,6 +8,9 @@ import gdal
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+
+
+
 # print(type(alpha_s))
 class Transfer_matrix():
     def __init__(self,topography_exs, topography_vars, vegetation_exs, vegetation_vars,
@@ -27,6 +30,21 @@ class Transfer_matrix():
         print("\nvegetation_betas = \n", self.vegetation_betas)
         print("\nslope_betas = \n", self.slope_betas)
         print("\n")
+
+
+    def  ___normalize_probilities(self, probability_list):
+        # Normalize the probability values, make sure the sum of the probabilities is 1
+        length = len(probability_list)
+        probability_list_new = [0 for i in range(length)]
+        total = 0
+        for i in range(length):
+            total += probability_list[i]
+        for i in range(length):
+            probability_list_new[i] = probability_list[i] / total 
+        return probability_list_new
+
+
+
 
     def __calculate_alphas_betas(self, ex_s, var_s):
         alphas = np.zeros_like(ex_s)
@@ -63,22 +81,33 @@ class Transfer_matrix():
         return (x * (y + 1) - y + x**3 - 2 * x**2 ) / y
 
     def find_beta_sample(self, geographic, i, j=0):
+        sample_probilites_3s = [0, 0, 0]
         if geographic == "topography":
             # T_sample represents the probability of transitioning from vegetation type i to j
-            alpha = self.topography_alphas[i][j]
-            beta = self.topography_betas[i][j]
+            for k in range(3):
+                alpha = self.topography_alphas[i][k]
+                beta = self.topography_betas[i][k]
+                sample_probilites_3s[k] = np.random.beta(alpha, beta)
         elif geographic == "vegetation":
             # V_sample represents the probability of transitioning from vegetation type i to j
-            alpha = self.vegetation_alphas[i][j]
-            beta = self.vegetation_betas[i][j]
+            for k in range(3):
+                alpha = self.vegetation_alphas[i][k]
+                beta = self.vegetation_alphas[i][k]
+                sample_probilites_3s[k] = np.random.beta(alpha, beta)            
         elif geographic == "slope":
             # S_sample  represents the probability of following a certain local slope type i
-            alpha = self.slope_alphas[i]
-            beta = self.slope_betas[i]
-        else:
-            print("find_beta_sample have error !!!")
-        sample = np.random.beta(alpha, beta)
-        return sample
+            for k in range(3):
+                alpha = self.slope_alphas[k]
+                beta = self.slope_betas[k]
+                sample_probilites_3s[k] = np.random.beta(alpha, beta)   
+        # print("sample_probilites_3s = ", sample_probilites_3s)
+        sample_probilites_3s_normalized = self.___normalize_probilities(sample_probilites_3s)
+        # print(sample_probilites_3s_normalized)
+        if geographic == "topography" or  geographic == "vegetation":
+            return sample_probilites_3s_normalized[j]
+        elif geographic == "slope":
+            return sample_probilites_3s_normalized[i]
+     
 
 
 
@@ -108,11 +137,9 @@ class Build_State():
         self.__resize_E_img(E_path)
         self.__calculate_TVE()
 
-        
-
-        print("self.r = ", self.r)
-        print("original size is = ", T_img.shape)
-        print("after resize size is = ", self.T_img.shape)  # (518, 1033, 3)
+        # print("self.r = ", self.r)
+        # print("original size is = ", T_img.shape)
+        # print("after resize size is = ", self.T_img.shape)  # (518, 1033, 3)
 
 
     def __resize_E_img(self, E_path, readFromUSGSImg = True):
@@ -132,34 +159,25 @@ class Build_State():
             cv2.imwrite("data_TVE/E_aNewSave.png", self.E_img)
         else:
             self.E_img = cv2.imread("data_TVE/E.png")
-
         # cv2.imshow('img', img)
         # cv2.waitKey(0)   
         
 
     def __calculate_TVE(self):
-
         print("radius = ", self.r) 
         self.T_img_copy = copy.deepcopy(self.T_img)
         self.V_img_copy = copy.deepcopy(self.V_img)
-
-        print(self.T_img.shape)
-        print(self.T_img[0][0])
         v = self.T_img[0][0][0]
-        print(type(v))
-        
-        # print(TVE_states)
-      
         for y in range(self.H_num):
             pen_y = self.r * (math.sqrt(3) / 2 ) * y   + (self.r / 2) * math.sqrt(3)#  1.5 * r * y
             pen_x = 2 * self.r - self.r * 0.75 * math.pow(-1, y) # (r / 4) * math.sqrt(3) * math.pow(-1, y + 1) + (r / 4) * math.sqrt(3) + r
             pen_x_ = pen_x 
             for x  in range(self.W_num):
-                print(x, y)
+                # print(x, y)
                 # The first and the last share special color and size labels
                 if (x == 0 and y == 0) or (x == self.W_num -1 and y == self.H_num - 1):
 
-                    print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
+                    # print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
                     color = (0, 0, 255)
                     cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)
                     cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
