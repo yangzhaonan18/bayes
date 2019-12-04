@@ -2,12 +2,14 @@ import numpy as np
 import math
 import cv2
 
+
+
 from utils import Transfer_matrix, Build_State, find_7index, show_probility_img3D
 
  
 
 # judge_slop_type(current_E_value, next_E_value)
-def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, degree=10):
+def judge_slop_type(current_E_value, next_E_value, between_cells_distance=24, degree=20):
     # between_cells_distance is the distance between cells
     # degree is between 0 and 360 
     # use 0 1 2 represents: uphill, no slope, and downhill
@@ -50,7 +52,7 @@ def find_7state(states_index, index_7s):
 
 
 
-def cal_7directions_probability(states_index, index_input):
+def cal_7directions_probability(states_index, index_current):
     """
     input :
 
@@ -60,7 +62,7 @@ def cal_7directions_probability(states_index, index_input):
         likelihood: 0.2006794611459864
 
     """
-    ij_7s, index_7s = find_7index(index_input) # cell index is 100
+    ij_7s, index_7s = find_7index(index_current) # cell index is 100
     states_7s = find_7state(states_index, index_7s)
     current_state = states_7s[0]
     direction_probilities = [ 0 for i in range(7)]
@@ -95,81 +97,10 @@ def cal_7directions_probability(states_index, index_input):
     return index_7s, prob_normal_7s, directions_7s_01, likelihood_p
 
 
+def prior_predictive_distribution(states_index, index_current=353, loop=200):
 
-
-
-if __name__ ==  "__main__":
-
-    T_path = "./data_TVE/T.png"
-    V_path = "./data_TVE/V.png"
-    E_path = "./data_TVE/E.png"
-    
-    # ######
-    # Experts give the expectation  and variance of the three domains
-    # (topography, vegetation, and slope) as priori 
-    # ######
-
-    # a 3x3 transition matrix of topography
-    topography_exs  = np.array([[0.6, 0.25, 0.15], 
-                                [0.5, 0.3, 0.2], 
-                                [0.4, 0.4, 0.2]])
-    topography_stds = np.array([[0.14, 0.15, 0.1], 
-                               [0.15, 0.15, 0.15], 
-                               [0.15, 0.15, 0.15]])
-    topography_vars = topography_stds * topography_stds
-
-    # a 3x3 transition matrix of vegetation
-    vegetation_exs  = np.array([[0.6, 0.25, 0.15], 
-                                [0.5, 0.3, 0.2], 
-                                [0.4, 0.4, 0.2]])
-    vegetation_stds = np.array([[0.14, 0.15, 0.1], 
-                               [0.15, 0.15, 0.15], 
-                               [0.15, 0.15, 0.15]])
-    vegetation_vars = vegetation_stds * vegetation_stds
-
-    # a 3 transition matrix of slope
-    slope_exs = np.array([0.6, 0.25, 0.15])
-    slope_stds  = np.array([0.14, 0.15, 0.1])
-    slope_vars = slope_stds * slope_stds
-
-    transfer_matrix = Transfer_matrix(topography_exs, topography_vars, 
-        vegetation_exs, vegetation_vars, slope_exs, slope_vars)
-    sample = transfer_matrix.find_beta_sample("topography", 0, 0)
-    print("sample = ", sample)
-
-    
-
-    # Ti, Tj = 2, 2
-    # Vi, Vj = 2, 2
-    # Si = 2
-
-
-    # index = 0
-
-  
-    # #######################################
-    # cell_state[0] use 0, 1, 2 represents topography:  lake, plain, hill 
-    # cell_state[1] use 0, 1, 2 represents vegetation density: sparse, medium,dense
-    # cell_state[2] use float value represents elevation
-    # cell_state[3] use int represents the index of this cell
-    # #######################################
-
-    # fai = [0 for i in range(7)]
-    # for cell_state_neighbor in cell_state_7neighbors:
-    #     fai[i] = combine_probilities(cell_state_current, cell_state_neighbor)
-    # fai = normalize_probilities(fai)
-
-
-    build_State = Build_State(T_path, V_path, E_path)
-    # build_State.show_TV_img2D()
-    # build_State.show_E_img3D()
-    states_ij = build_State.TVE_states_ij
-    states_index = build_State.TVE_states_index
-    index_current = 330
-    loop  = 200
     probility_distribution_608s = [0 for i in range(608)]
     probility_distribution_608s[index_current] = 1
-
     for i in range(loop):
         for index_current in range(608):
             p_i = probility_distribution_608s[index_current]
@@ -205,7 +136,91 @@ if __name__ ==  "__main__":
     b = p_data
  
     img = cv2.merge([b, b, b])
-    show_probility_img3D(img)
+    show_probility_img3D(img)    
+
+
+if __name__ ==  "__main__":
+
+    T_path = "./data_TVE/T.png"
+    V_path = "./data_TVE/V.png"
+    E_path = "./data_TVE/E.png"
+    
+    # ######
+    # Experts give the expectation  and variance of the three domains
+    # (topography, vegetation, and slope) as priori 
+    # ######
+
+    # a 3x3 transition matrix of topography
+    topography_exs  = np.array([[0.6, 0.25, 0.15], 
+                                [0.5, 0.3, 0.2], 
+                                [0.4, 0.4, 0.2]])
+    topography_stds = np.array([[0.14, 0.15, 0.1], 
+                               [0.15, 0.15, 0.15], 
+                               [0.15, 0.15, 0.15]])
+    topography_vars = topography_stds * topography_stds
+
+    # a 3x3 transition matrix of vegetation
+    vegetation_exs  = np.array([[0.6, 0.25, 0.15], 
+                                [0.5, 0.3, 0.2], 
+                                [0.6, 0.4, 0.2]])
+    vegetation_stds = np.array([[0.14, 0.15, 0.1], 
+                               [0.15, 0.15, 0.15], 
+                               [0.15, 0.15, 0.15]])
+    vegetation_vars = vegetation_stds * vegetation_stds
+
+    # a 3 transition matrix of slope
+    slope_exs = np.array([0.2, 0.4, 0.4])
+    slope_stds  = np.array([0.15, 0.14, 0.3])
+    slope_vars = slope_stds * slope_stds
+
+    transfer_matrix = Transfer_matrix(topography_exs, topography_vars, 
+        vegetation_exs, vegetation_vars, slope_exs, slope_vars)
+    sample = transfer_matrix.find_beta_sample("topography", 0, 0)
+    print("sample = ", sample)
+
+    
+
+    # Ti, Tj = 2, 2
+    # Vi, Vj = 2, 2
+    # Si = 2
+
+
+    # index = 0
+
+  
+    # #######################################
+    # cell_state[0] use 0, 1, 2 represents topography:  lake, plain, hill 
+    # cell_state[1] use 0, 1, 2 represents vegetation density: sparse, medium,dense
+    # cell_state[2] use float value represents elevation
+    # cell_state[3] use int represents the index of this cell
+    # #######################################
+
+    # fai = [0 for i in range(7)]
+    # for cell_state_neighbor in cell_state_7neighbors:
+    #     fai[i] = combine_probilities(cell_state_current, cell_state_neighbor)
+    # fai = normalize_probilities(fai)
+
+
+    build_State = Build_State(T_path, V_path, E_path)
+    # build_State.show_TV_img2D()
+    # build_State.show_E_img3D()
+    states_ij = build_State.TVE_states_ij
+    states_index = build_State.TVE_states_index
+
+
+    prior_predictive_distribution(states_index, index_current=353, loop=200)
+
+
+    transfer_matrix.topography_alphas
+    transfer_matrix.topography_betas
+    transfer_matrix.vegetation_alphas
+    transfer_matrix.vegetation_betas
+    transfer_matrix.slope_alphas
+    transfer_matrix.slope_betas
+
+
+   
+    index_7s, prob_normal_7s, directions_7s_01, likelihood_p = cal_7directions_probability(states_index, index_current=353)
 
 
 

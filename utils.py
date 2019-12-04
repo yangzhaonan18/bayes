@@ -329,6 +329,7 @@ def find_7index(index):
 
 
 def show_probility_img3D(img):
+    img = cv2.resize(img,(1000, 500))
 
     b, _, _ = cv2.split(img)
     h, w, _ = img.shape 
