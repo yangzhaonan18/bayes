@@ -2,6 +2,8 @@ import numpy as np
 import math
 
 
+from utils import Transfer_matrix, Build_State
+
 def combine_probilities(cell_state_current, cell_state_neighbor):
     Vi = 0
     Vj = 0
@@ -41,86 +43,18 @@ def  normalize_probilities(probability_list):
     return probability_list_new
 
 
-# print(type(alpha_s))
-class Transfer_matrix():
-    def __init__(self,topography_exs, topography_vars, vegetation_exs, vegetation_vars,
-        slope_exs, slope_vars):
-        # calculate alpha and beta from expectation and variance
-        # topography, vegetation, and slope
-        self.topography_alphas, self.topography_betas  = self.__calculate_alphas_betas(topography_exs, topography_vars)
-        self.vegetation_alphas, self.vegetation_betas  = self.__calculate_alphas_betas(vegetation_exs, vegetation_vars)
-        self.slope_alphas, self.slope_betas  = self.__calculate_alphas_betas(slope_exs, slope_vars)
-        print("\n\n###     Alpha_s list below :  ###")
-        print("\ntopography_alphas = \n", self.topography_alphas)
-        print("\nvegetation_alphas = \n", self.vegetation_alphas)
-        print("\nslope_alphas = \n", self.slope_alphas)
-
-        print("\n\n###     Beta_s list below :  ###")
-        print("\ntopography_betas = \n", self.topography_betas)
-        print("\nvegetation_betas = \n", self.vegetation_betas)
-        print("\nslope_betas = \n", self.slope_betas)
-        print("\n")
-
-    def __calculate_alphas_betas(self, ex_s, var_s):
-        alphas = np.zeros_like(ex_s)
-        betas = np.zeros_like(var_s)
-        dimension = len(list(alphas.shape))
-        print("########")
-        print("The shape of the transition matrix is", alphas.shape)
-        print("dimension is ", dimension)
-        
-        if dimension  == 2:
-            for i in range(3):
-                for j in range(3):
-                    x = ex_s[i][j]
-                    y = var_s[i][j]
-                    alphas[i][j] = self.__cal_alpha(x, y)
-                    betas[i][j] = self.__cal_beta(x, y)
-
-        elif dimension  == 1:
-            for i in range(3):
-                x = ex_s[i]
-                y = var_s[i]
-                alphas[i]  = self.__cal_alpha(x, y)
-                betas[i] = self.__cal_beta(x, y)
-        return alphas, betas
-
-    def __cal_alpha(self, ex, var):
-        x = ex
-        y = var
-        return -(x*y + x**3 - x**2) / y
-
-    def __cal_beta(self, ex, var):
-        x = ex
-        y = var
-        return (x * (y + 1) - y + x**3 - 2 * x**2 ) / y
-
-    def find_beta_sample(self, modain, i, j=0):
-        if modain == "topography":
-            # T_sample represents the probability of transitioning from vegetation type i to j
-            alpha = self.topography_alphas[i][j]
-            beta = self.topography_betas[i][j]
-        elif modain == "vegetation":
-            # V_sample represents the probability of transitioning from vegetation type i to j
-            alpha = self.vegetation_alphas[i][j]
-            beta = self.vegetation_betas[i][j]
-        elif modain == "slope":
-            # S_sample  represents the probability of following a certain local slope type i
-            alpha = self.slope_alphas[i]
-            beta = self.slope_betas[i]
-        else:
-            print("find_beta_sample have error !!!")
-        sample = np.random.beta(alpha, beta)
-        return sample
-
 
 if __name__ ==  "__main__":
+
+    T_path = "./data_TVE/T.png"
+    V_path = "./data_TVE/V.png"
+    E_path = "./data_TVE/E.img"
+    
     # ######
-    # 
     # Experts give the expectation  and variance of the three domains
-    #  (topography, vegetation, and slope) as priori 
-    # 
+    # (topography, vegetation, and slope) as priori 
     # ######
+
     # a 3x3 transition matrix of topography
     topography_exs  = np.array([[0.6, 0.25, 0.15], 
                                 [0.5, 0.3, 0.2], 
@@ -156,19 +90,33 @@ if __name__ ==  "__main__":
     Si = 2
 
 
-    index = 0
-    # states contains all cells states, each cell's state is like [0/1/2, 0/1/2, 0/1/2, 8848.0, index]
-    cell_state_current = states[index]
-    cell_state_7neighbors = find_state_7neighbors(states, index)
+    # index = 0
 
+    # ###########
+    # states contains all cells states, each cell's state is like [0/1/2, 0/1/2, 0/1/2, 8848.0, index]
+    # ##############
+
+    # cell_state_current = states[index]
+    # cell_state_7neighbors = find_state_7neighbors(states, index)
+
+    # #######################################
     # cell_state[0] use 0, 1, 2 represents topography:  lake, plain, hill 
     # cell_state[1] use 0, 1, 2 represents vegetation density: sparse, medium,dense
     # cell_state[2] use float value represents elevation
     # cell_state[3] use int represents the index of this cell
-    fai = [0 for i in range(7)]
-    for cell_state_neighbor in cell_state_7neighbors:
-        fai[i] = combine_probilities(cell_state_current, cell_state_neighbor)
-    fai = normalize_probilities(fai)
+    # #######################################
+
+    # fai = [0 for i in range(7)]
+    # for cell_state_neighbor in cell_state_7neighbors:
+    #     fai[i] = combine_probilities(cell_state_current, cell_state_neighbor)
+    # fai = normalize_probilities(fai)
+
+
+    state = Build_State(T_path, V_path, E_path)
+
+
+
+
 
 
 

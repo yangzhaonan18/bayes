@@ -1,10 +1,86 @@
-import cv2
-import math
+
 import numpy as np
+import math
+import cv2
 import copy
 
+# print(type(alpha_s))
+class Transfer_matrix():
+    def __init__(self,topography_exs, topography_vars, vegetation_exs, vegetation_vars,
+        slope_exs, slope_vars):
+        # calculate alpha and beta from expectation and variance
+        # topography, vegetation, and slope
+        self.topography_alphas, self.topography_betas  = self.__calculate_alphas_betas(topography_exs, topography_vars)
+        self.vegetation_alphas, self.vegetation_betas  = self.__calculate_alphas_betas(vegetation_exs, vegetation_vars)
+        self.slope_alphas, self.slope_betas  = self.__calculate_alphas_betas(slope_exs, slope_vars)
+        print("\n\n###     Alpha_s list below :  ###")
+        print("\ntopography_alphas = \n", self.topography_alphas)
+        print("\nvegetation_alphas = \n", self.vegetation_alphas)
+        print("\nslope_alphas = \n", self.slope_alphas)
 
-class State():
+        print("\n\n###     Beta_s list below :  ###")
+        print("\ntopography_betas = \n", self.topography_betas)
+        print("\nvegetation_betas = \n", self.vegetation_betas)
+        print("\nslope_betas = \n", self.slope_betas)
+        print("\n")
+
+    def __calculate_alphas_betas(self, ex_s, var_s):
+        alphas = np.zeros_like(ex_s)
+        betas = np.zeros_like(var_s)
+        dimension = len(list(alphas.shape))
+        print("########")
+        print("The shape of the transition matrix is", alphas.shape)
+        print("dimension is ", dimension)
+        
+        if dimension  == 2:
+            for i in range(3):
+                for j in range(3):
+                    x = ex_s[i][j]
+                    y = var_s[i][j]
+                    alphas[i][j] = self.__cal_alpha(x, y)
+                    betas[i][j] = self.__cal_beta(x, y)
+
+        elif dimension  == 1:
+            for i in range(3):
+                x = ex_s[i]
+                y = var_s[i]
+                alphas[i]  = self.__cal_alpha(x, y)
+                betas[i] = self.__cal_beta(x, y)
+        return alphas, betas
+
+    def __cal_alpha(self, ex, var):
+        x = ex
+        y = var
+        return -(x*y + x**3 - x**2) / y
+
+    def __cal_beta(self, ex, var):
+        x = ex
+        y = var
+        return (x * (y + 1) - y + x**3 - 2 * x**2 ) / y
+
+    def find_beta_sample(self, geographic, i, j=0):
+        if geographic == "topography":
+            # T_sample represents the probability of transitioning from vegetation type i to j
+            alpha = self.topography_alphas[i][j]
+            beta = self.topography_betas[i][j]
+        elif geographic == "vegetation":
+            # V_sample represents the probability of transitioning from vegetation type i to j
+            alpha = self.vegetation_alphas[i][j]
+            beta = self.vegetation_betas[i][j]
+        elif geographic == "slope":
+            # S_sample  represents the probability of following a certain local slope type i
+            alpha = self.slope_alphas[i]
+            beta = self.slope_betas[i]
+        else:
+            print("find_beta_sample have error !!!")
+        sample = np.random.beta(alpha, beta)
+        return sample
+
+
+
+
+
+class Build_State():
     def __init__(self, T_path, V_path, E_path):
         self.H = 500
         self.W = 1000
@@ -125,20 +201,6 @@ class State():
 
 
 
-
-
-
-# cv2.imshow("a", T_img)
-# cv2.waitKey(10)
-
-if __name__ =="__main__":
-    T_path = "./data_TVE/T.png"
-    V_path = "./data_TVE/V.png"
-    E_path = "./data_TVE/E.img"
-
-    state = State(T_path, V_path, E_path)
- 
-    # T = state.T()
 
 
 
