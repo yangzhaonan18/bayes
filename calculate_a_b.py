@@ -2,7 +2,7 @@ import numpy as np
 import math
 
 
-from utils import Transfer_matrix, Build_State
+from utils import Transfer_matrix, Build_State, find_7index
 
 def combine_probilities(cell_state_current, cell_state_neighbor):
     Vi = 0
@@ -16,15 +16,16 @@ def find_state_7neighbors(states, index):
     # 7neighbors_states = 0
     pass  
 
-
-def judge_slop_type(cell_i, cell_j, cell_side_length=24, degree=20):
-    # cell_side_length is the distance between cells
+# judge_slop_type(current_E_value, next_E_value)
+def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, degree=15):
+    # between_cells_distance is the distance between cells
     # degree is between 0 and 360 
     # use 0 1 2 represents: uphill, no slope, and downhill
-    # cell_j[3] is the elevation of the cell
-    elevation_diff = cell_j[3] - cell_i[3]
+    elevation_diff = int(next_E_value) - int(current_E_value)
+    # print("elevation_diff = ", elevation_diff)  # 5 m
     pi = 3.1416
-    threshold  = cell_side_length * math.sin(degree * (pi / 180))
+    threshold  = between_cells_distance * math.sin(degree * (pi / 180))
+    print("elevation_diff threshold = ", threshold)  # 8
     if elevation_diff > threshold:
         slop_type = 0  # uphill
     elif elevation_diff >= - threshold and  elevation_diff <= threshold:
@@ -46,12 +47,24 @@ def  normalize_probilities(probability_list):
     return probability_list_new
 
 
+def find_7state(states_index, index_7s):
+    states_7s = []
+    for index in  index_7s:
+        if index >= 0 :
+            states_7s.append(states_index[index])
+        else:
+            # Set the region outside the map to state type 0 type 0  and 0  elevation
+            states_7s.append([0, 0, 0])
+
+    return np.array(states_7s, dtype=np.uint8)
+
+
 
 if __name__ ==  "__main__":
 
     T_path = "./data_TVE/T.png"
     V_path = "./data_TVE/V.png"
-    E_path = "./data_TVE/E.img"
+    E_path = "./data_TVE/E.png"
     
     # ######
     # Experts give the expectation  and variance of the three domains
@@ -95,13 +108,7 @@ if __name__ ==  "__main__":
 
     # index = 0
 
-    # ###########
-    # states contains all cells states, each cell's state is like [0/1/2, 0/1/2, 0/1/2, 8848.0, index]
-    # ##############
-
-    # cell_state_current = states[index]
-    # cell_state_7neighbors = find_state_7neighbors(states, index)
-
+  
     # #######################################
     # cell_state[0] use 0, 1, 2 represents topography:  lake, plain, hill 
     # cell_state[1] use 0, 1, 2 represents vegetation density: sparse, medium,dense
@@ -115,15 +122,53 @@ if __name__ ==  "__main__":
     # fai = normalize_probilities(fai)
 
 
-    state = Build_State(T_path, V_path, E_path)
-    # state.show_TV_img2D()
-    # state.show_E_img3D()
-    states = state.TVE_states
+    build_State = Build_State(T_path, V_path, E_path)
+    # build_State.show_TV_img2D()
+    # build_State.show_E_img3D()
+    states_ij = build_State.TVE_states_ij
+    states_index = build_State.TVE_states_index
 
-    print(states[0][0])
-    print(states[10][10])
-    print(states[31][18])
+    print(states_ij[0][0])
+    print(states_ij[10][10])
+    print(states_ij[31][18])
+    print(states_index[0])
 
+    index_input = 100
+
+    ij_7s, index_7s = find_7index(index_input) # cell index is 100
+
+    states_7s = find_7state(states_index, index_7s)
+
+    current_state = states_7s[0]
+    for i in range(1, 7, 1):
+        next_state = states_7s[i]
+        current_T_type, next_T_type = current_state[0], next_state[0]
+        current_V_type, next_V_type = current_state[1], next_state[1]
+        current_E_value, next_E_value = current_state[2], next_state[2]
+        print("current_E_value, next_E_value = ", current_E_value, next_E_value)
+
+        slop_type = judge_slop_type(current_E_value, next_E_value)
+
+        p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
+        p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
+        p_S = transfer_matrix.find_beta_sample("slope", slop_type)
+        print(p_T, p_V, p_S)
+
+
+        
+
+
+
+
+
+
+
+
+    # print("\nstates_7s = \n", states_7s)
+
+    # print("\ninput_index = ", input_index)
+    # print("output_ij = ", ij_7s)
+    # print("index_7s = ", index_7s)
 
 
 

@@ -85,19 +85,26 @@ class Transfer_matrix():
 
 
 class Build_State():
+    """
+    use three image to calculate every cells's states
+    """
     def __init__(self, T_path, V_path, E_path):
         self.H = 500
         self.W = 1000
         self.H_num = 32
         self.W_num = 19
         self.r = self.H /self.H_num  + 1  # 16.625
-        self.TVE_states = np.zeros((self.H_num, self.W_num, 3))
+        self.TVE_states_ij = np.zeros((self.H_num, self.W_num, 3))
+        self.TVE_states_index = np.zeros((self.H_num * self.W_num, 3))
 
         T_img = cv2.imread(T_path, cv2.IMREAD_COLOR)
         V_img = cv2.imread(V_path, cv2.IMREAD_COLOR)
         self.T_img = cv2.resize(T_img, (self.W, self.H))
         self.V_img = cv2.resize(V_img, (self.W, self.H))
         self.E_img = np.zeros((self.W,self.H,3), np.uint8).fill(0)
+        # cv2.imwrite("data_TVE/T_aNewSave.png", self.T_img)
+        # cv2.imwrite("data_TVE/V_aNewSave.png", self.V_img)
+
         self.__resize_E_img(E_path)
         self.__calculate_TVE()
 
@@ -108,18 +115,23 @@ class Build_State():
         print("after resize size is = ", self.T_img.shape)  # (518, 1033, 3)
 
 
-    def __resize_E_img(self, E_path):
-        geo = gdal.Open(E_path) 
-        data = geo.ReadAsArray()
-        # print("data.shape = ", data.shape)  # data.shape =  (35, 67)
-        min_e = np.min(data)  # 2398.6328
-        max_e = np.max(data)  # 2474.1682
-        # print(max_e - min_e)  # 75.5354
-        b = np.array(255 * ((data - min_e)/(max_e - min_e))).astype(np.uint8)
-        g = b
-        r = b
-        img = cv2.merge([b, g, r])
-        self.E_img = cv2.resize(img, (self.W, self.H))  #  h 500  w 10000
+    def __resize_E_img(self, E_path, readFromUSGSImg = True):
+        readFromUSGSImg = False
+        if readFromUSGSImg:  # E_original.img
+            geo = gdal.Open(E_path) 
+            data = geo.ReadAsArray()
+            # print("data.shape = ", data.shape)  # data.shape =  (35, 67)
+            min_e = np.min(data)  # 2398.6328
+            max_e = np.max(data)  # 2474.1682
+            # print(max_e - min_e)  # 75.5354
+            b = np.array(75.5354 * ((data - min_e)/(max_e - min_e))).astype(np.uint8)
+            g = b
+            r = b
+            img = cv2.merge([b, g, r])
+            self.E_img = cv2.resize(img, (self.W, self.H))  #  h 500  w 10000
+            cv2.imwrite("data_TVE/E_aNewSave.png", self.E_img)
+        else:
+            self.E_img = cv2.imread("data_TVE/E.png")
 
         # cv2.imshow('img', img)
         # cv2.waitKey(0)   
@@ -137,7 +149,7 @@ class Build_State():
         print(type(v))
         
         # print(TVE_states)
-        print(self.TVE_states.shape)
+      
         for y in range(self.H_num):
             pen_y = self.r * (math.sqrt(3) / 2 ) * y   + (self.r / 2) * math.sqrt(3)#  1.5 * r * y
             pen_x = 2 * self.r - self.r * 0.75 * math.pow(-1, y) # (r / 4) * math.sqrt(3) * math.pow(-1, y + 1) + (r / 4) * math.sqrt(3) + r
@@ -159,15 +171,15 @@ class Build_State():
 
                 # type 0
                 if self.T_img[int(pen_y)][int(pen_x_)][0] <  100:
-                    self.TVE_states[y][x][0] = 0
+                    self.TVE_states_ij[y][x][0] = 0
                     T_color =  (0, 0, 255)
                 # type 2
                 elif self.T_img[int(pen_y)][int(pen_x_)][0] >  200:
-                    self.TVE_states[y][x][0] = 2
+                    self.TVE_states_ij[y][x][0] = 2
                     T_color =  (0, 255, 0 )
                 # The other is type 1
                 else: 
-                    self.TVE_states[y][x][0] = 1
+                    self.TVE_states_ij[y][x][0] = 1
                     T_color =  (255, 0, 0 )
 
                 # #########
@@ -177,15 +189,15 @@ class Build_State():
                 # ##########
                 # type 0
                 if self.V_img[int(pen_y)][int(pen_x_)][0] <  100:
-                    self.TVE_states[y][x][1] = 0
+                    self.TVE_states_ij[y][x][1] = 0
                     V_color =  (0, 0, 255 )
                 # type 2
                 elif self.V_img[int(pen_y)][int(pen_x_)][0] >  200:
-                    self.TVE_states[y][x][1] = 2
+                    self.TVE_states_ij[y][x][1] = 2
                     V_color =  (0, 255, 0 )
                 # The other is type 1
                 else: 
-                    self.TVE_states[y][x][1] = 1
+                    self.TVE_states_ij[y][x][1] = 1
                     V_color =  (255, 0, 0 )
                 # #########
                 # 
@@ -193,18 +205,22 @@ class Build_State():
                 # 
                 # ##########
                 # type 0
-                self.TVE_states[y][x][2] = self.E_img[int(pen_y)][int(pen_x_)][0]
+                self.TVE_states_ij[y][x][2] = self.E_img[int(pen_y)][int(pen_x_)][0]
                 cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=T_color, thickness=2)
+
                 cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=V_color, thickness=2)
- 
+                cv2.putText(self.T_img_copy, str(y*self.W_num + x), (int(pen_x_), int(pen_y)), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (50, 170, 50), 2)
+
                 pen_x_ += 3 * self.r # r * math.sqrt(3)
                 # print("x, y = ", x, y)
                 # print("pen_y pen_x_ =  ", int(pen_x_), int(pen_y))
-
+        self.TVE_states_index = self.TVE_states_ij.reshape((self.H_num * self.W_num, 3))
  
     
 
-           
+    #   show value of elevation 
+    # use 0~255 in image  to replace 0 to 75.5 m(relative elevation)
     def show_E_img3D(self):
         b, g, r = cv2.split(self.E_img)
         h, w, c = self.E_img.shape 
@@ -220,7 +236,7 @@ class Build_State():
         plt.show()
 
 
-
+    #  topography, vegetation. each have three types
     def show_TV_img2D(self):
         cv2.imshow("T_img_copy", self.T_img_copy)
         cv2.imshow("V_img_copy", self.V_img_copy)
@@ -230,7 +246,68 @@ class Build_State():
            cv2.destroyAllWindows() 
 
 
-        
+  
+
+
+
+
+
+
+def ij2index(i, j):
+    W_num =19
+    # Cells that are not on the map are set to a negative index
+    if i < 0 or i > 31 or j < 0  or j > 18 :  
+        return -abs(W_num * i + j)
+    return W_num * i + j
+
+def index2ij(index_cell):
+    W_num = 19
+    return  index_cell // W_num, index_cell % W_num
+
+def find_7index(index):
+    """    
+    return:
+        ij_7s : 7x2 like  [[i, j], [i,j] ....]
+        index_7s : 7 index
+    """
+    H_num = 32
+    W_num = 19
+    max_inde = 607  # have 608 cell
+    if index > 607 or index < 0:
+        print("Input index error [0, 607]!!!")
+    ij_7s = [[-1, -1] for i in range(7)]
+    index_7s = [[-1] for i in range(7)]
+    i, j = index2ij(index)
+
+    # ##########
+    # if index out of range,  set -1
+    # ########
+    if i % 2 == 1:
+        ij_7s[0][0], ij_7s[0][1] = i, j
+        ij_7s[1][0], ij_7s[1][1] =  i + 2, j  
+        ij_7s[2][0], ij_7s[2][1] =  i + 1, j + 1 
+        ij_7s[3][0], ij_7s[3][1] =  i - 1, j + 1 
+        ij_7s[4][0], ij_7s[4][1] =  i - 2, j
+        ij_7s[5][0], ij_7s[5][1] =  i - 1, j
+        ij_7s[6][0], ij_7s[6][1] =  i + 1, j
+    elif i % 2 == 0:
+        ij_7s[0][0], ij_7s[0][1] = i, j
+        ij_7s[1][0], ij_7s[1][1] =  i + 2, j  
+        ij_7s[2][0], ij_7s[2][1] =  i + 1, j 
+        ij_7s[3][0], ij_7s[3][1] =  i - 1, j
+        ij_7s[4][0], ij_7s[4][1] =  i - 2, j
+        ij_7s[5][0], ij_7s[5][1] =  i - 1, j - 1
+        ij_7s[6][0], ij_7s[6][1] =  i + 1, j - 1
+    # print("input index = ", index)
+    # print("current i j index is = ", i, j)
+    # print("output 7 index = ", ij_7s)
+    for i in range(len(ij_7s)):
+        index_7s[i] = ij2index(ij_7s[i][0], ij_7s[i][1])
+    return ij_7s, index_7s
+
+
+
+
 
 
         

@@ -27,22 +27,25 @@ def find_7index(index):
 	max_inde = 607  # have 608 cell
 	if index > 607 or index < 0:
 		print("Input index error !!!")
-	indexs = [[-1, -1] for i in range(7)]
+	ij_7s = [[-1, -1] for i in range(7)]
 	i, j = index2ij(index)
 
 	# ##########
 	# if index out of range,  set -1
 	# ########
-	indexs[0][0], indexs[0][1] = i, j
-	indexs[1][0], indexs[1][1] =  i + 2 if i + 1 <= H_num - 1 else -1, j  
-	indexs[2][0], indexs[2][1] =  i + 1 if i + 1 <= H_num - 1 else -1, j + 1 if j + 1 <= W_num -1 else -1
-	indexs[3][0], indexs[3][1] =  i - 1 if i - 1 >= 0 else -1, j + 1 if j + 1 <= W_num -1 else -1
-	indexs[4][0], indexs[4][1] =  i - 2 if i - 1 >= 0 else -1, j
-	indexs[5][0], indexs[5][1] =  i - 1 if i - 1 >= 0 else -1, j
-	indexs[6][0], indexs[6][1] =  i + 1 if i + 1 <= H_num -1 else -1, j
-	print("input index = ", index)
-	print("current i j index is = ", i, j)
-	print("output 7 index = ", indexs)
+	ij_7s[0][0], ij_7s[0][1] = i, j
+	ij_7s[1][0], ij_7s[1][1] =  i + 2 if i + 1 <= H_num - 1 else -1, j  
+	ij_7s[2][0], ij_7s[2][1] =  i + 1 if i + 1 <= H_num - 1 else -1, j + 1 if j + 1 <= W_num -1 else -1
+	ij_7s[3][0], ij_7s[3][1] =  i - 1 if i - 1 >= 0 else -1, j + 1 if j + 1 <= W_num -1 else -1
+	ij_7s[4][0], ij_7s[4][1] =  i - 2 if i - 1 >= 0 else -1, j
+	ij_7s[5][0], ij_7s[5][1] =  i - 1 if i - 1 >= 0 else -1, j
+	ij_7s[6][0], ij_7s[6][1] =  i + 1 if i + 1 <= H_num -1 else -1, j
+	# print("input index = ", index)
+	# print("current i j index is = ", i, j)
+	# print("output 7 index = ", ij_7s)
+	for i in range(len(ij_7s)):
+		index_7s[i] = ij2index(ij_7s[i][0], ij_7s[i][1])
+	return ij_7s, index_7s
  
  
 	 
