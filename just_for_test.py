@@ -79,58 +79,58 @@
 
 
 
-######################################## 
-import turtle
+# ######################################## 
+# import turtle
 
-import math
-import cv2
+# import math
+# import cv2
 
 
-H = 500
-W_num = 32
-H_num = 19
+# H = 500
+# W_num = 32
+# H_num = 19
  
-r = (H / (2 * H_num)) * (2 / math.sqrt(3)) + 2
-print("radius = ", r) 
+# r = (H / (2 * H_num)) * (2 / math.sqrt(3)) + 2
+# print("radius = ", r) 
 
-T_img = cv2.imread('./data_TVE/T.png')
-print(T_img.shape)
-print(T_img[0][0])
-v = T_img[0][0][0]
-print(type(v))
-print(T_img[0][0][0])
+# T_img = cv2.imread('./data_TVE/T.png')
+# print(T_img.shape)
+# print(T_img[0][0])
+# v = T_img[0][0][0]
+# print(type(v))
+# print(T_img[0][0][0])
 
-for y in range(W_num):
-    pen_y = r * (math.sqrt(3) / 2 ) * y   + (r / 2) * math.sqrt(3)#  1.5 * r * y
-    pen_x = 2 * r - r * 0.75 * math.pow(-1, y) # (r / 4) * math.sqrt(3) * math.pow(-1, y + 1) + (r / 4) * math.sqrt(3) + r
-    pen_x_ = pen_x 
-    for x  in range(H_num):
-        # The first and the last share special color and size labels
-        if (x == 0 and y == 0) or (x == H_num -1 and y == W_num - 1):
-            print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
-            color = (0, 0, 255)
-            cv2.circle(T_img, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
-        # type 0
-        if T_img[int(pen_y)][int(pen_x_)][0] <  100:
-            color =  (0, 255, 255 )
-        # type 2
-        elif T_img[int(pen_y)][int(pen_x_)][0] >  200:
-            color =  (0, 200, 0 )
-        # The other is type 1
-        else: 
-            color =  (255, 0, 0 )
+# for y in range(W_num):
+#     pen_y = r * (math.sqrt(3) / 2 ) * y   + (r / 2) * math.sqrt(3)#  1.5 * r * y
+#     pen_x = 2 * r - r * 0.75 * math.pow(-1, y) # (r / 4) * math.sqrt(3) * math.pow(-1, y + 1) + (r / 4) * math.sqrt(3) + r
+#     pen_x_ = pen_x 
+#     for x  in range(H_num):
+#         # The first and the last share special color and size labels
+#         if (x == 0 and y == 0) or (x == H_num -1 and y == W_num - 1):
+#             print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
+#             color = (0, 0, 255)
+#             cv2.circle(T_img, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
+#         # type 0
+#         if T_img[int(pen_y)][int(pen_x_)][0] <  100:
+#             color =  (0, 255, 255 )
+#         # type 2
+#         elif T_img[int(pen_y)][int(pen_x_)][0] >  200:
+#             color =  (0, 200, 0 )
+#         # The other is type 1
+#         else: 
+#             color =  (255, 0, 0 )
             
 
-        cv2.circle(T_img, (int(pen_x_), int(pen_y)), radius=2, color=color, thickness=2)
-        pen_x_ += 3 * r # r * math.sqrt(3)
+#         cv2.circle(T_img, (int(pen_x_), int(pen_y)), radius=2, color=color, thickness=2)
+#         pen_x_ += 3 * r # r * math.sqrt(3)
 
      
 
-        # print("x, y = ", x, y)
-        # print("pen_y pen_x_ =  ", int(pen_x_), int(pen_y))
+#         # print("x, y = ", x, y)
+#         # print("pen_y pen_x_ =  ", int(pen_x_), int(pen_y))
 
-cv2.imshow("T_img", T_img)
-cv2.waitKey(0)
+# cv2.imshow("T_img", T_img)
+# cv2.waitKey(0)
 
 
 
@@ -150,6 +150,11 @@ cv2.waitKey(0)
 
 # # cv2.imshow("T_img", T_img)
 # cv2.waitKey(0)
+
+a = "asdf"
+b = a.copy()  #  has no attribute 'copy'
+b = "a"
+print(a)
 
 
 
