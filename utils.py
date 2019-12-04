@@ -328,7 +328,23 @@ def find_7index(index):
 
 
 
-        
+def show_probility_img3D(img):
+
+    b, _, _ = cv2.split(img)
+    h, w, _ = img.shape 
+    max_p = np.max(img)
+    min_p = np.min(img)
+    b = np.array(255 * (b - min_p)/(max_p - min_p)).astype(np.uint8)
+
+    fig = plt.figure()
+    ax = Axes3D(fig)
+    Y = np.arange(0, h, 1)  # 500
+    X = np.arange(0, w, 1)  # 1000
+    X, Y = np.meshgrid(X, Y)
+    Z = np.array(b)
+    # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
+    ax.plot_surface(Y, X, Z, cmap='rainbow')
+    plt.show()        
 
 
 

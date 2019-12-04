@@ -1,13 +1,13 @@
 import numpy as np
 import math
+import cv2
 
-
-from utils import Transfer_matrix, Build_State, find_7index
+from utils import Transfer_matrix, Build_State, find_7index, show_probility_img3D
 
  
 
 # judge_slop_type(current_E_value, next_E_value)
-def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, degree=15):
+def judge_slop_type(current_E_value, next_E_value, between_cells_distance=20, degree=10):
     # between_cells_distance is the distance between cells
     # degree is between 0 and 360 
     # use 0 1 2 represents: uphill, no slope, and downhill
@@ -165,8 +165,8 @@ if __name__ ==  "__main__":
     # build_State.show_E_img3D()
     states_ij = build_State.TVE_states_ij
     states_index = build_State.TVE_states_index
-    index_current = 100
-    loop  = 2
+    index_current = 330
+    loop  = 200
     probility_distribution_608s = [0 for i in range(608)]
     probility_distribution_608s[index_current] = 1
 
@@ -174,28 +174,39 @@ if __name__ ==  "__main__":
         for index_current in range(608):
             p_i = probility_distribution_608s[index_current]
             if  p_i != 0:
-                print(p_i)
+                print("p_i = ", p_i)
                 # input("sdf")
                 index_7s, prob_normal_7s, directions_7s_01, likelihood_p = cal_7directions_probability(states_index, index_current)
-                directions_number = directions_7s_01.index(max(directions_7s_01))
+                # directions_number = directions_7s_01.index(max(directions_7s_01))
+                conditions_probility_608s = [0 for i in range(608)]
                 for i in range(len(index_7s)):
                     next_index = index_7s[i]
                     next_p = prob_normal_7s[i] 
-                    conditions_probility_608s = [0 for i in range(608)]
-                    if directions_number >= 0 and directions_number <= 607:
+                    # print("next_index = ", next_index)
+                    if next_index >= 0 and next_index <= 607:
                         conditions_probility_608s[next_index] = next_p
-                        print("prob_normal_7s[i]", prob_normal_7s[i])
+                        # print("prob_normal_7s[i]", prob_normal_7s[i])
                     else:
-                        print("out index is =", index)
-                join_probability  =  conditions_probility_608s * p_i
+                        print(" next_index out of range =", next_index)
+                join_probability  =  [x * p_i for x in conditions_probility_608s] 
                 probility_distribution_608s[index_current] = 0
-                probility_distribution_608s += join_probability
+                for i in range(len(join_probability)):
+                    probility_distribution_608s[i] +=  join_probability[i]
 
     print("....")
     for i, item in enumerate(probility_distribution_608s):
         if item != 0:
             print(i, item)            
     print(sum(probility_distribution_608s))
+    print(len(probility_distribution_608s))
+    print(len(join_probability))
+    p_data = np.array(probility_distribution_608s)
+    p_data = np.reshape(p_data,(32, 19))
+    b = p_data
+ 
+    img = cv2.merge([b, b, b])
+    show_probility_img3D(img)
+
 
 
 
