@@ -50,6 +50,54 @@ def find_7state(states_index, index_7s):
 
 
 
+def cal_7directions_probability(states_index, index_input):
+    """
+    input :
+
+    return :
+        index_7s: [100, 138, 120, 82, 62, 81, 119]
+        directions:  [0, 0, 0, 0, 0, 1, 0]
+        likelihood: 0.2006794611459864
+
+    """
+    ij_7s, index_7s = find_7index(index_input) # cell index is 100
+    states_7s = find_7state(states_index, index_7s)
+    current_state = states_7s[0]
+    direction_probilities = [ 0 for i in range(7)]
+
+    for i in range(0, 7, 1):
+        next_state = states_7s[i]
+        current_T_type, next_T_type = current_state[0], next_state[0]
+        current_V_type, next_V_type = current_state[1], next_state[1]
+        current_E_value, next_E_value = current_state[2], next_state[2]
+        # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
+        slop_type = judge_slop_type(current_E_value, next_E_value)
+        p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
+        p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
+        p_S = transfer_matrix.find_beta_sample("slope", slop_type)
+        combine_probilities = p_T * p_V * p_S
+        direction_probilities[i] = combine_probilities 
+    
+    direction_probilities_normalized = normalize_probilities(direction_probilities)  # (7,)
+    prob_normal_7s = direction_probilities_normalized
+    
+    max_direction = prob_normal_7s.index(max(prob_normal_7s))
+    directions_7s_01 = [0 for i in range(7)]
+    directions_7s_01[max_direction] = 1
+    likelihood_p = prob_normal_7s[max_direction]
+    print("\n # # # # # # # # # #  ")
+    print("\nindex_7s = \n", index_7s)
+    print("\n7 direction probilities after normalized = \n", prob_normal_7s)
+    print("\ndirections_01 = \n", directions_7s_01)
+    print("\nlikelihood_p = \n", likelihood_p)
+    
+
+    return index_7s, prob_normal_7s, directions_7s_01, likelihood_p
+
+
+
+
+
 if __name__ ==  "__main__":
 
     T_path = "./data_TVE/T.png"
@@ -117,35 +165,40 @@ if __name__ ==  "__main__":
     # build_State.show_E_img3D()
     states_ij = build_State.TVE_states_ij
     states_index = build_State.TVE_states_index
- 
-    index_input = 100
-    ij_7s, index_7s = find_7index(index_input) # cell index is 100
-    states_7s = find_7state(states_index, index_7s)
-    current_state = states_7s[0]
-    direction_probilities = [ 0 for i in range(7)]
+    index_current = 100
+    loop  = 2
+    probility_distribution_608s = [0 for i in range(608)]
+    probility_distribution_608s[index_current] = 1
 
-    for i in range(0, 7, 1):
-        next_state = states_7s[i]
-        current_T_type, next_T_type = current_state[0], next_state[0]
-        current_V_type, next_V_type = current_state[1], next_state[1]
-        current_E_value, next_E_value = current_state[2], next_state[2]
-        # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
-        slop_type = judge_slop_type(current_E_value, next_E_value)
-        p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
-        p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
-        p_S = transfer_matrix.find_beta_sample("slope", slop_type)
-        combine_probilities = p_T * p_V * p_S
-        direction_probilities[i] = combine_probilities 
-    direction_probilities_normalized = normalize_probilities(direction_probilities)  # (7,)
-    dpn = direction_probilities_normalized
-    print("\n7 direction probilities after normalized = \n", dpn)
-    max_direction = dpn.index(max(dpn))
-    directions = [0 for i in range(7)]
-    directions[max_direction] = 1
-    likelihood = dpn[max_direction]
-    print("\ndirections = \n", directions)
-    print("\nlikelihood = \n", likelihood)
-        
+    for i in range(loop):
+        for index_current in range(608):
+            p_i = probility_distribution_608s[index_current]
+            if  p_i != 0:
+                print(p_i)
+                # input("sdf")
+                index_7s, prob_normal_7s, directions_7s_01, likelihood_p = cal_7directions_probability(states_index, index_current)
+                directions_number = directions_7s_01.index(max(directions_7s_01))
+                for i in range(len(index_7s)):
+                    next_index = index_7s[i]
+                    next_p = prob_normal_7s[i] 
+                    conditions_probility_608s = [0 for i in range(608)]
+                    if directions_number >= 0 and directions_number <= 607:
+                        conditions_probility_608s[next_index] = next_p
+                        print("prob_normal_7s[i]", prob_normal_7s[i])
+                    else:
+                        print("out index is =", index)
+                join_probability  =  conditions_probility_608s * p_i
+                probility_distribution_608s[index_current] = 0
+                probility_distribution_608s += join_probability
+
+    print("....")
+    for i, item in enumerate(probility_distribution_608s):
+        if item != 0:
+            print(i, item)            
+    print(sum(probility_distribution_608s))
+
+
+
 
 
 
