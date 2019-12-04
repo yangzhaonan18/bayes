@@ -3,6 +3,10 @@ import numpy as np
 import math
 import cv2
 import copy
+import gdal
+
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 # print(type(alpha_s))
 class Transfer_matrix():
@@ -93,22 +97,39 @@ class Build_State():
         V_img = cv2.imread(V_path, cv2.IMREAD_COLOR)
         self.T_img = cv2.resize(T_img, (self.W, self.H))
         self.V_img = cv2.resize(V_img, (self.W, self.H))
+        self.E_img = np.zeros((self.W,self.H,3), np.uint8).fill(0)
+        self.__resize_E_img(E_path)
+        self.__calculate_TVE()
 
-
-
-        self.__TV()
+        
 
         print("self.r = ", self.r)
         print("original size is = ", T_img.shape)
         print("after resize size is = ", self.T_img.shape)  # (518, 1033, 3)
 
 
+    def __resize_E_img(self, E_path):
+        geo = gdal.Open(E_path) 
+        data = geo.ReadAsArray()
+        # print("data.shape = ", data.shape)  # data.shape =  (35, 67)
+        min_e = np.min(data)  # 2398.6328
+        max_e = np.max(data)  # 2474.1682
+        # print(max_e - min_e)  # 75.5354
+        b = np.array(255 * ((data - min_e)/(max_e - min_e))).astype(np.uint8)
+        g = b
+        r = b
+        img = cv2.merge([b, g, r])
+        self.E_img = cv2.resize(img, (self.W, self.H))  #  h 500  w 10000
 
-    def __TV(self):
+        # cv2.imshow('img', img)
+        # cv2.waitKey(0)   
+        
+
+    def __calculate_TVE(self):
 
         print("radius = ", self.r) 
-        T_img_copy = copy.deepcopy(self.T_img)
-        V_img_copy = copy.deepcopy(self.V_img)
+        self.T_img_copy = copy.deepcopy(self.T_img)
+        self.V_img_copy = copy.deepcopy(self.V_img)
 
         print(self.T_img.shape)
         print(self.T_img[0][0])
@@ -128,11 +149,11 @@ class Build_State():
 
                     print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
                     color = (0, 0, 255)
-                    cv2.circle(T_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)
-                    cv2.circle(V_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
+                    cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)
+                    cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
                 # #########
                 # 
-                # Use the information in topography(T.img) to determine the value of  TVE_states's topography values
+                # Use the information in topography(T.img) to determine the type of  TVE_states's topography type
                 # 
                 # ##########
 
@@ -151,7 +172,7 @@ class Build_State():
 
                 # #########
                 # 
-                # Use the information in vegetation(V.img) to determine the value of  TVE_states's vegetation values
+                # Use the information in vegetation(V.img) to determine the type of  TVE_states's vegetation type
                 # 
                 # ##########
                 # type 0
@@ -166,32 +187,53 @@ class Build_State():
                 else: 
                     self.TVE_states[y][x][1] = 1
                     V_color =  (255, 0, 0 )
-
-                cv2.circle(T_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=T_color, thickness=2)
-                cv2.circle(V_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=V_color, thickness=2)
+                # #########
+                # 
+                # Use the information in elevation(E.img) to determine the value of TVE_states's elevation value
+                # 
+                # ##########
+                # type 0
+                self.TVE_states[y][x][2] = self.E_img[int(pen_y)][int(pen_x_)][0]
+                cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=T_color, thickness=2)
+                cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=V_color, thickness=2)
  
-
-
-
-
-
-
-             
                 pen_x_ += 3 * self.r # r * math.sqrt(3)
                 # print("x, y = ", x, y)
                 # print("pen_y pen_x_ =  ", int(pen_x_), int(pen_y))
 
-        cv2.imshow("T_img_copy", T_img_copy)
-        cv2.imshow("V_img_copy", V_img_copy)
-        cv2.waitKey(0)   
+ 
+    
 
-        TVE_states = None 
-        return TVE_states
+           
+    def show_E_img3D(self):
+        b, g, r = cv2.split(self.E_img)
+        h, w, c = self.E_img.shape 
+
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        Y = np.arange(0, h, 1)  # 500
+        X = np.arange(0, w, 1)  # 1000
+        X, Y = np.meshgrid(X, Y)
+        Z = np.array(b)
+        # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
+        ax.plot_surface(Y, X, Z, cmap='rainbow')
+        plt.show()
+
+
+
+    def show_TV_img2D(self):
+        cv2.imshow("T_img_copy", self.T_img_copy)
+        cv2.imshow("V_img_copy", self.V_img_copy)
+        # cv2.waitKey(5000)  
+        k = cv2.waitKey(0) 
+        if k ==27:   
+           cv2.destroyAllWindows() 
+
 
         
 
-    def E():
-        pass
+
+        
 
 
 

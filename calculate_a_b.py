@@ -113,6 +113,11 @@ if __name__ ==  "__main__":
 
 
     state = Build_State(T_path, V_path, E_path)
+    state.show_TV_img2D()
+    state.show_E_img3D()
+    states = state.TVE_states
+
+    print(states)
 
 
 
