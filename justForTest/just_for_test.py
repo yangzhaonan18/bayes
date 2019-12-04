@@ -221,5 +221,16 @@
 # print(gray)
 
 
+def ij2index(i, j):
+    W_num =19
+    return W_num * i + j
+
+def index2ig(index_cell):
+    W_num = 19
+    return  index_cell // W_num, index_cell % W_num
+
+def find_7index(index):
+
+
 
 

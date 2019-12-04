@@ -9,6 +9,9 @@ def combine_probilities(cell_state_current, cell_state_neighbor):
     Vj = 0
 
 
+
+
+
 def find_state_7neighbors(states, index):
     # 7neighbors_states = 0
     pass  
@@ -113,11 +116,14 @@ if __name__ ==  "__main__":
 
 
     state = Build_State(T_path, V_path, E_path)
-    state.show_TV_img2D()
-    state.show_E_img3D()
+    # state.show_TV_img2D()
+    # state.show_E_img3D()
     states = state.TVE_states
 
-    print(states)
+    print(states[0][0])
+    print(states[10][10])
+    print(states[31][18])
+
 
 
 
