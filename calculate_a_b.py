@@ -74,9 +74,11 @@ def cal_7directions_probability(states_index, index_current):
         current_E_value, next_E_value = current_state[2], next_state[2]
         # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
         slop_type = judge_slop_type(current_E_value, next_E_value)
+
         p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
         p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
         p_S = transfer_matrix.find_beta_sample("slope", slop_type)
+        
         combine_probilities = p_T * p_V * p_S
         direction_probilities[i] = combine_probilities 
     
@@ -86,15 +88,15 @@ def cal_7directions_probability(states_index, index_current):
     max_direction = prob_normal_7s.index(max(prob_normal_7s))
     directions_7s_01 = [0 for i in range(7)]
     directions_7s_01[max_direction] = 1
-    likelihood_p = prob_normal_7s[max_direction]
+    max_p = prob_normal_7s[max_direction]
     print("\n # # # # # # # # # #  ")
     print("\nindex_7s = \n", index_7s)
     print("\n7 direction probilities after normalized = \n", prob_normal_7s)
     print("\ndirections_01 = \n", directions_7s_01)
-    print("\nlikelihood_p = \n", likelihood_p)
+    print("\nmax_p = \n", max_p)
     
 
-    return index_7s, prob_normal_7s, directions_7s_01, likelihood_p
+    return index_7s, prob_normal_7s, directions_7s_01, max_p
 
 
 def prior_predictive_distribution(states_index, index_current=353, loop=200):
@@ -107,7 +109,7 @@ def prior_predictive_distribution(states_index, index_current=353, loop=200):
             if  p_i != 0:
                 print("p_i = ", p_i)
                 # input("sdf")
-                index_7s, prob_normal_7s, directions_7s_01, likelihood_p = cal_7directions_probability(states_index, index_current)
+                index_7s, prob_normal_7s, directions_7s_01, max_p = cal_7directions_probability(states_index, index_current)
                 # directions_number = directions_7s_01.index(max(directions_7s_01))
                 conditions_probility_608s = [0 for i in range(608)]
                 for i in range(len(index_7s)):
@@ -208,7 +210,7 @@ if __name__ ==  "__main__":
     states_index = build_State.TVE_states_index
 
 
-    prior_predictive_distribution(states_index, index_current=353, loop=200)
+    # prior_predictive_distribution(states_index, index_current=353, loop=200)
 
 
     transfer_matrix.topography_alphas
@@ -220,7 +222,16 @@ if __name__ ==  "__main__":
 
 
    
-    index_7s, prob_normal_7s, directions_7s_01, likelihood_p = cal_7directions_probability(states_index, index_current=353)
+    index_7s, prob_normal_7s, directions_7s_01, max_p = cal_7directions_probability(states_index, index_current=353)
+
+    observe_indexs = [353, 371, 390, 370, 351, 313, 293, 312, 
+                        330, 368, 406, 425, 463, 482, 464, 445, 465,
+                        484, 504, 485, 467, 486, 508, 525, 507, 488, 470]
+    for i  in range(len(observe_indexs) -1):
+        flag = 1
+        index_7s, _, directions_7s_01, _ = cal_7directions_probability(states_index, index_current=observe_indexs[i])
+         
+
 
 
 

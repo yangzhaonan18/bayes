@@ -20,6 +20,12 @@ class Transfer_matrix():
         self.topography_alphas, self.topography_betas  = self.__calculate_alphas_betas(topography_exs, topography_vars)
         self.vegetation_alphas, self.vegetation_betas  = self.__calculate_alphas_betas(vegetation_exs, vegetation_vars)
         self.slope_alphas, self.slope_betas  = self.__calculate_alphas_betas(slope_exs, slope_vars)
+        # self.T_transition_matrix  = np.zeros((3, 3))
+        # self.V_transition_matrix  = np.zeros((3, 3))
+        # self.S_transition_matrix  = np.zeros((3, ))
+        self.T_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
+        self.V_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
+        self.S_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
         print("\n\n###     Alpha_s list below :  ###")
         print("\ntopography_alphas = \n", self.topography_alphas)
         print("\nvegetation_alphas = \n", self.vegetation_alphas)
@@ -80,7 +86,8 @@ class Transfer_matrix():
         y = var
         return (x * (y + 1) - y + x**3 - 2 * x**2 ) / y
 
-    def find_beta_sample(self, geographic, i, j=0):
+
+    def find_beta_sample_backup(self, geographic, i, j=0):
         sample_probilites_3s = [0, 0, 0]
         if geographic == "topography":
             # T_sample represents the probability of transitioning from vegetation type i to j
@@ -108,6 +115,63 @@ class Transfer_matrix():
         elif geographic == "slope":
             return sample_probilites_3s_normalized[i]
      
+
+    def theta_sample_21s(self):
+        for i in range(3):
+            for j in range(3):
+                self.T_alpha = self.topography_alphas[i][j]
+                self.T_beta = self.topography_betas[i][j]
+                self.T_transition_matrix[i][j] =  np.random.beta(self.T_alpha, self.T_beta)
+                self.T_transition_matrix[i] = self.___normalize_probilities(self.T_transition_matrix[i])
+
+        for i in range(3):
+            for j in range(3):
+                self.V_alpha  = self.vegetation_alphas[i][j]
+                self.V_beta = self.vegetation_alphas[i][j]
+                self.V_transition_matrix[i][j] =  np.random.beta(self.V_alpha , self.V_beta)
+                self.V_transition_matrix[i] = self.___normalize_probilities(self.V_transition_matrix[i])
+
+
+        for i in range(3):
+            self.S_alpha = self.slope_alphas[i]
+            self.S_beta = self.slope_alphas[i]
+            self.S_transition_matrix[i] = np.random.beta(self.S_alpha, self.S_beta)  
+        self.S_transition_matrix[i] = self.___normalize_probilities(self.S_transition_matrix)
+
+
+     
+
+
+    def find_beta_sample(self, geographic, i, j=0):
+        self.theta_sample_21s()
+        if geographic == "topography":
+            # print("self.T_transition_matrix[i][i] " ,self.T_transition_matrix[i][i])
+            return self.T_transition_matrix[i][i] 
+        elif geographic == "vegetation":
+            # pirnt( self.V_transition_matrix[i][i])
+            return self.V_transition_matrix[i][i]
+        elif geographic == "slope":
+            # print(self.S_transition_matrix[i])
+            return self.S_transition_matrix[i]
+        else:
+            print("find_beta_sample function input error !")
+
+
+
+
+    def change_beta_sample(geographic, new_value, index_ri, index_cj=-1):
+        if geographic == "topography" :
+            self.T_transition_matrix[index_ri][index_cj] = new_value
+        elif geographic == "vegetation" :
+            self.V_transition_matrix[index_ri][index_cj] = new_value
+        elif geographic == "slope" :
+            self.S_transition_matrix[index_ri] = new_value
+
+
+     
+
+
+
 
 
 
