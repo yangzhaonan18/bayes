@@ -28,6 +28,7 @@ class Transfer_matrix():
         self.V_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
         self.S_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
         self.TVS_transition_matrix = [0 for i in range(21)]
+        
         print("\n\n###     Alpha_s list below :  ###")
         print("\ntopography_alphas = \n", self.topography_alphas)
         print("\nvegetation_alphas = \n", self.vegetation_alphas)
@@ -185,14 +186,7 @@ class Transfer_matrix():
             self.S_transition_matrix[index_ri] = new_value
 
 
-     
-
-
-
-
-
-
-
+    
 
 class Build_State():
     """
@@ -421,6 +415,7 @@ def show_probility_img3D(img):
     h, w, _ = img.shape 
     max_p = np.max(img)
     min_p = np.min(img)
+    print("max_p , min_p", max_p , min_p)
     b = np.array(255 * (b - min_p)/(max_p - min_p)).astype(np.uint8)
 
     fig = plt.figure()

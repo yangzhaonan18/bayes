@@ -3,20 +3,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import beta, norm
 import random
-from tqdm import tqdm
 
 from get_direction_prob import theta_21to3, cal_7directions_probability
 
-# observations (np.ndarray, nX2): observations, [[index, direction_index], ..., [index, direction_index]].
+# 1. collect data from the photo and save as [[index, direction_index], ..., [index, direction_index]]
+
+# 2. process function
+
+
+# observations (np.ndarray, nX2): observations.
 # alphas (np.ndarray, 21X1): alphas of thetas distribution.
 # betas (np.ndarray, 21X1): betas of thetas distribution.
-# thetas (np.ndarray, 21X1): thetas.
-# states_index (np.ndarray, 608X3): information of the map.
+# thetas (np.ndarray, 21X1): thetas
 
 
 alphas = np.load("./alphas.npy")
 betas = np.load("./betas.npy")
-# thetas = np.load("./thetas.npy")
+thetas = np.load("./thetas.npy")
 observations = np.load("./observations.npy")
 states_index = np.load("./states_index.npy")
 
@@ -41,11 +44,14 @@ def process(thetas):
                 index_current = observations[i, 0]
                 prob_normal_7s = cal_7directions_probability(states_index, index_current, T, V, S)
                 state_transitions_matrix[i, :] = prob_normal_7s
+
                 index_next = observations[i, 1]
                 tmp_observation = np.zeros((7))
                 tmp_observation[index_next] = 1
                 observations_matrix[i, :] = tmp_observation
+
         return state_transitions_matrix, observations_matrix        
+
 
 def P(i, thetas):
         """PDF used in the M-H algorithm.
@@ -61,12 +67,13 @@ def P(i, thetas):
         theta_i = thetas[i]
         P_theta_i = beta(alphas[i], betas[i]).pdf(theta_i)
 
-        state_transitions_matrix, observations_matrix = process(thetas)
+        state_transitions_matrix, observations_matrix = process(thetas, observations)
 
-        f_z_given_theta = np.mean(np.sum(state_transitions_matrix*observations_matrix, axis=1))
+        f_z_given_theta = np.mean(np.sum(state_transitions_matrix*observations_matrix, axis=0))
 
         probability = P_theta_i * f_z_given_theta
         return probability
+
 
 
 def Gibbs_M_H_sampler(thetas):
@@ -76,10 +83,10 @@ def Gibbs_M_H_sampler(thetas):
                 thetas (np.ndarray, 21X1): the priors.
         """
         burn_in_n = 500
-        samples_n = 10000
+        samples_n = 500
         samples_matrix = np.zeros((samples_n, 21)) # save the samples_n samples, containing 21 theta values.
 
-        for i in tqdm(range((burn_in_n + samples_n))):
+        for i in range((burn_in_n + samples_n)):
                 # outside loop: Gibbs sampler.
                 for j in range(21):
                         # inside loop: M-H sampler.
@@ -98,5 +105,5 @@ def Gibbs_M_H_sampler(thetas):
 
         return samples_matrix
 
-# if __name__ == "__main__":
-#         state_transitions_matrix, observations_matrix  = process(thetas)
+if __name__ == "__main__":
+        state_transitions_matrix, observations_matrix  = process(thetas)

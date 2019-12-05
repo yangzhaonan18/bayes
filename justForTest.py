@@ -60,3 +60,22 @@
 #  	print(19 % 19)
 
 
+
+
+# import numpy as np
+
+# alpha = np.load("./alphas.npy")
+# beta = np.load("./betas.npy")
+# theta = np.load("./thetas.npy")
+# observations = np.load("./observations.npy")
+
+
+
+# print(alpha.shape, beta.shape, theta.shape, observations.shape)
+
+
+
+import numpy as np
+a = np.ones((1, 2))
+b = np.array([[1], [0]])
+print(np.dot(np.mat(a), np.mat(b)))
