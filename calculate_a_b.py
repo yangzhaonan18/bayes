@@ -75,10 +75,10 @@ def cal_7directions_probability(states_index, index_current):
         # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
         slop_type = judge_slop_type(current_E_value, next_E_value)
 
-        p_T = transfer_matrix.find_beta_sample("topography", current_T_type, next_T_type)
-        p_V = transfer_matrix.find_beta_sample("vegetation", current_V_type, next_V_type)
-        p_S = transfer_matrix.find_beta_sample("slope", slop_type)
-        
+        p_T = transfer_matrix.find_theta_sample("topography", current_T_type, next_T_type)
+        p_V = transfer_matrix.find_theta_sample("vegetation", current_V_type, next_V_type)
+        p_S = transfer_matrix.find_theta_sample("slope", slop_type)
+
         combine_probilities = p_T * p_V * p_S
         direction_probilities[i] = combine_probilities 
     
@@ -141,6 +141,7 @@ def prior_predictive_distribution(states_index, index_current=353, loop=200):
     show_probility_img3D(img)    
 
 
+
 if __name__ ==  "__main__":
 
     T_path = "./data_TVE/T.png"
@@ -177,8 +178,21 @@ if __name__ ==  "__main__":
 
     transfer_matrix = Transfer_matrix(topography_exs, topography_vars, 
         vegetation_exs, vegetation_vars, slope_exs, slope_vars)
-    sample = transfer_matrix.find_beta_sample("topography", 0, 0)
-    print("sample = ", sample)
+    sample = transfer_matrix.find_theta_sample("topography", 0, 0)
+
+
+
+    # All the parameters
+    alpha_21s =  np.array(transfer_matrix.alpha_21s)
+    beta_21s =  np.array(transfer_matrix.beta_21s)
+    theta_sample_21s = np.array(transfer_matrix.theta_sample_21s())
+   
+
+
+    print("\nalpha_21s =\n", alpha_21s)
+    print("\nbeta_21s =\n", beta_21s)
+    print("\ntheta_sample_21s = \n", theta_sample_21s)
+    print(input("input"))
 
     
 
@@ -208,29 +222,51 @@ if __name__ ==  "__main__":
     # build_State.show_E_img3D()
     states_ij = build_State.TVE_states_ij
     states_index = build_State.TVE_states_index
+ 
+
+    # 
+    # 
+    # 
+    # 
+
+ 
+    observe_indexs = [353, 371, 390, 370, 351, 313, 293, 312, 
+                        330, 368, 406, 425, 463, 482, 464, 445, 465,
+                        484, 504, 485, 467, 486, 506, 525, 507, 488, 470]
+    observations_matrix_n7   = [[0 for i in range(7)] for j in range(len(observe_indexs)-1)]
+    for i  in range(len(observe_indexs) -2):
+        
+        index_7s, _, directions_7s_01, _ = cal_7directions_probability(states_index, index_current=observe_indexs[i])
+        next_direction = index_7s.index(observe_indexs[i + 1])
+        print(i, next_direction)
+        observations_matrix_n7[i][next_direction] = 1
+    
+    # observations_matrix_n7
+    observations_matrix_n7 = np.array(observations_matrix_n7)
+    
+
+    # print(observations_matrix_n7)
+
+    
+
+    print("666")  
 
 
-    # prior_predictive_distribution(states_index, index_current=353, loop=200)
+    # prior_predictive_distribution(states_index, index_current=353, loop=20)
 
 
-    transfer_matrix.topography_alphas
-    transfer_matrix.topography_betas
-    transfer_matrix.vegetation_alphas
-    transfer_matrix.vegetation_betas
-    transfer_matrix.slope_alphas
-    transfer_matrix.slope_betas
+    # transfer_matrix.topography_alphas
+    # transfer_matrix.topography_betas
+    # transfer_matrix.vegetation_alphas
+    # transfer_matrix.vegetation_betas
+    # transfer_matrix.slope_alphas
+    # transfer_matrix.slope_betas
 
 
    
-    index_7s, prob_normal_7s, directions_7s_01, max_p = cal_7directions_probability(states_index, index_current=353)
+    # index_7s, prob_normal_7s, directions_7s_01, max_p = cal_7directions_probability(states_index, index_current=353)
 
-    observe_indexs = [353, 371, 390, 370, 351, 313, 293, 312, 
-                        330, 368, 406, 425, 463, 482, 464, 445, 465,
-                        484, 504, 485, 467, 486, 508, 525, 507, 488, 470]
-    for i  in range(len(observe_indexs) -1):
-        flag = 1
-        index_7s, _, directions_7s_01, _ = cal_7directions_probability(states_index, index_current=observe_indexs[i])
-         
+   
 
 
 

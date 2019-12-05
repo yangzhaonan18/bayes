@@ -20,12 +20,14 @@ class Transfer_matrix():
         self.topography_alphas, self.topography_betas  = self.__calculate_alphas_betas(topography_exs, topography_vars)
         self.vegetation_alphas, self.vegetation_betas  = self.__calculate_alphas_betas(vegetation_exs, vegetation_vars)
         self.slope_alphas, self.slope_betas  = self.__calculate_alphas_betas(slope_exs, slope_vars)
-        # self.T_transition_matrix  = np.zeros((3, 3))
-        # self.V_transition_matrix  = np.zeros((3, 3))
-        # self.S_transition_matrix  = np.zeros((3, ))
+        
+        self.alpha_21s = self.__993_to_21(self.topography_alphas, self.vegetation_alphas, self.slope_alphas)
+        self.beta_21s = self.__993_to_21(self.topography_betas, self.vegetation_betas, self.slope_betas)
+
         self.T_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
         self.V_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
         self.S_transition_matrix  = [[0 for i in range(3)] for i in range(3)]
+        self.TVS_transition_matrix = [0 for i in range(21)]
         print("\n\n###     Alpha_s list below :  ###")
         print("\ntopography_alphas = \n", self.topography_alphas)
         print("\nvegetation_alphas = \n", self.vegetation_alphas)
@@ -136,13 +138,28 @@ class Transfer_matrix():
             self.S_alpha = self.slope_alphas[i]
             self.S_beta = self.slope_alphas[i]
             self.S_transition_matrix[i] = np.random.beta(self.S_alpha, self.S_beta)  
-        self.S_transition_matrix[i] = self.___normalize_probilities(self.S_transition_matrix)
+        self.S_transition_matrix = self.___normalize_probilities(self.S_transition_matrix)
+
+        self.TVS_transition_matrix = self.__993_to_21(self.T_transition_matrix, self.V_transition_matrix, self.S_transition_matrix)
+        return self.TVS_transition_matrix
+
+    def __993_to_21(self, A, B, C):
+        ABC = [0 for i in range(21)]
+
+        for i in range(3):
+            ABC[18 + i] = C[i]
+            for j in range(3):
+                ABC[3 * i + j] = A[i][j]
+                ABC[9 + 3 * i  + j] = B[i][j]
+        return ABC
+
+ 
 
 
-     
 
 
-    def find_beta_sample(self, geographic, i, j=0):
+
+    def find_theta_sample(self, geographic, i, j=0):
         self.theta_sample_21s()
         if geographic == "topography":
             # print("self.T_transition_matrix[i][i] " ,self.T_transition_matrix[i][i])
@@ -326,6 +343,11 @@ class Build_State():
         k = cv2.waitKey(0) 
         if k ==27:   
            cv2.destroyAllWindows() 
+
+
+
+
+
 
 
   
