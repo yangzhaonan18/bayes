@@ -75,7 +75,19 @@
 
 
 
+# import numpy as np
+# a = np.ones((1, 2))
+# b = np.array([[1], [0]])
+# print(np.dot(np.mat(a), np.mat(b)))
+
+import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
-a = np.ones((1, 2))
-b = np.array([[1], [0]])
-print(np.dot(np.mat(a), np.mat(b)))
+import pandas as pd
+df = pd.DataFrame([[0 ,1 ], [1,0]])
+ 
+dfData = df.corr()
+plt.subplots(figsize=(9, 9)) # ÉèÖÃ»­Ãæ´óÐ¡
+sns.heatmap(dfData, annot=True, vmax=1, square=True, cmap="Blues")
+# plt.savefig('./BluesStateRelation.png')
+plt.show() 

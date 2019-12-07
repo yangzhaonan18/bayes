@@ -6,8 +6,8 @@ from get_direction_prob import theta_21to3, cal_7directions_probability
 from gibbs import Gibbs_M_H_sampler
 
 
-# alphas = np.load("./data_npy/alphas.npy")
-# betas = np.load("./data_npy/betas.npy")
+alphas = np.load("./data_npy/alphas.npy")
+betas = np.load("./data_npy/betas.npy")
 thetas = np.load("./data_npy/thetas.npy")
 # observations = np.load("./data_npy/observations.npy")
 # states_index = np.load("./data_npy/states_index.npy")
