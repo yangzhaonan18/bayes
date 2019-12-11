@@ -60,7 +60,8 @@ def show_one():
 if __name__ == "__main__":
 
 
-	show_one()
+	# show_one()
+	show_21()
 
 	import pandas as pd
 	df = pd.DataFrame(samples_matrix)
