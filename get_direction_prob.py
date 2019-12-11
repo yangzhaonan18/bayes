@@ -138,3 +138,41 @@ def cal_7directions_probability(states_index, index_current, T, V, S):
     prob_normal_7s = direction_probilities_normalized
 
     return prob_normal_7s
+
+
+
+
+def cal_7directions_probability_poster(states_index, index_current, T, V, S):
+    """
+    input :
+
+    return :
+        index_7s: [100, 138, 120, 82, 62, 81, 119]
+        directions:  [0, 0, 0, 0, 0, 1, 0]
+        likelihood: 0.2006794611459864
+
+    """
+    ij_7s, index_7s = find_7index(index_current) # cell index is 100
+    states_7s = find_7state(states_index, index_7s)
+    current_state = states_7s[0]
+    direction_probilities = [ 0 for i in range(7)]
+
+    for i in range(0, 7, 1):
+        next_state = states_7s[i]
+        current_T_type, next_T_type = current_state[0], next_state[0]
+        current_V_type, next_V_type = current_state[1], next_state[1]
+        current_E_value, next_E_value = current_state[2], next_state[2]
+        # print("current_E_value, next_E_value = ", current_E_value, next_E_value)
+        slop_type = judge_slop_type(current_E_value, next_E_value)
+
+        p_T = T[current_T_type, next_T_type]
+        p_V = V[current_V_type, next_V_type]
+        p_S = S[slop_type]
+
+        combine_probilities = p_T * p_V * p_S
+        direction_probilities[i] = combine_probilities 
+    
+    direction_probilities_normalized = normalize_probilities(direction_probilities)  # (7,)
+    prob_normal_7s = direction_probilities_normalized
+
+    return index_7s, prob_normal_7s

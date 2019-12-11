@@ -6,6 +6,7 @@ import random
 from tqdm import tqdm
 
 from get_direction_prob import theta_21to3, cal_7directions_probability
+from calculate_a_b import get_states_index_random
 
 # observations (np.ndarray, nX2): observations, [[index, direction_index], ..., [index, direction_index]].
 # alphas (np.ndarray, 21X1): alphas of thetas distribution.
@@ -29,23 +30,23 @@ def process(thetas):
                 thetas (np.ndarray, 1X21): the priors.
 
         Returns:
-                state_transitions_matrix (np.ndarray, nX7): the state transitions matrix after normalization.
-                observations_matrix (np.ndarray, nX7): the observations matrix.
+                prob_matrix_n7s (np.ndarray, nX7): the state transitions matrix after normalization.
+                observations_matrix_n7s (np.ndarray, nX7): the observations matrix.
 
         """
         T, V, S = theta_21to3(thetas)
         n = observations.shape[0]
-        state_transitions_matrix, observations_matrix = np.ones((n, 7)), np.ones((n, 7))
+        prob_matrix_n7s, observations_matrix_n7s = np.ones((n, 7)), np.ones((n, 7))
 
         for i in range(n):
                 index_current = observations[i, 0]
                 prob_normal_7s = cal_7directions_probability(states_index, index_current, T, V, S)
-                state_transitions_matrix[i, :] = prob_normal_7s
+                prob_matrix_n7s[i, :] = prob_normal_7s
                 index_next = observations[i, 1]
                 tmp_observation = np.zeros((7))
                 tmp_observation[index_next] = 1
-                observations_matrix[i, :] = tmp_observation
-        return state_transitions_matrix, observations_matrix        
+                observations_matrix_n7s[i, :] = tmp_observation
+        return prob_matrix_n7s, observations_matrix_n7s        
 
 def P(i, thetas):
         """PDF used in the M-H algorithm.
@@ -61,11 +62,11 @@ def P(i, thetas):
         theta_i = thetas[i]
         P_theta_i = beta(alphas[i], betas[i]).pdf(theta_i)
 
-        state_transitions_matrix, observations_matrix = process(thetas)
+        prob_matrix_n7s, observations_matrix_n7s = process(thetas)
 
-        f_z_given_theta = np.mean(np.sum(state_transitions_matrix*observations_matrix, axis=1))
+        given_theta = np.mean(np.sum(prob_matrix_n7s * observations_matrix_n7s, axis=1))
 
-        probability = P_theta_i * f_z_given_theta
+        probability = P_theta_i * given_theta
         return probability
 
 
@@ -99,4 +100,4 @@ def Gibbs_M_H_sampler(thetas):
         return samples_matrix
 
 # if __name__ == "__main__":
-#         state_transitions_matrix, observations_matrix  = process(thetas)
+#         prob_matrix_n7s, observations_matrix_n7s  = process(thetas)

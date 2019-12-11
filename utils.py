@@ -13,8 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # print(type(alpha_s))
 class Transfer_matrix():
-    def __init__(self,topography_exs, topography_vars, vegetation_exs, vegetation_vars,
-        slope_exs, slope_vars):
+    def __init__(self, topography_exs, topography_vars, vegetation_exs, vegetation_vars, slope_exs, slope_vars):
         # calculate alpha and beta from expectation and variance
         # topography, vegetation, and slope
         self.topography_alphas, self.topography_betas  = self.__calculate_alphas_betas(topography_exs, topography_vars)
@@ -187,7 +186,7 @@ class Transfer_matrix():
 
 
     
-
+# Establish the status of 607 cells in the map.
 class Build_State():
     """
     use three image to calculate every cells's states
@@ -218,7 +217,10 @@ class Build_State():
 
 
     def __resize_E_img(self, E_path, readFromUSGSImg = True):
+        # The first time, because you need to generate professional elevation data into an image format, 
+        # it should be set to TRUE here
         readFromUSGSImg = False
+
         if readFromUSGSImg:  # E_original.img
             geo = gdal.Open(E_path) 
             data = geo.ReadAsArray()
@@ -233,13 +235,20 @@ class Build_State():
             self.E_img = cv2.resize(img, (self.W, self.H))  #  h 500  w 10000
             cv2.imwrite("data_TVE/E_aNewSave.png", self.E_img)
         else:
+            # Read elevation data directly from processed images(The size of this elevation image is 
+            # the same as the size of the T/V map)
             self.E_img = cv2.imread("data_TVE/E.png")
         # cv2.imshow('img', img)
         # cv2.waitKey(0)   
         
 
     def __calculate_TVE(self):
-        print("radius = ", self.r) 
+        """
+        Read the picture information, and then set the status(T state, V state, E value) value for each cell
+ 
+        
+        """
+        # print("radius = ", self.r) 
         self.T_img_copy = copy.deepcopy(self.T_img)
         self.V_img_copy = copy.deepcopy(self.V_img)
         v = self.T_img[0][0][0]
@@ -254,8 +263,8 @@ class Build_State():
 
                     # print("(int(pen_x_), int(pen_y))", (int(pen_x_), int(pen_y)))
                     color = (0, 0, 255)
-                    cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)
-                    cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=10, color=color, thickness=-1)  
+                    cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=20, color=color, thickness=-1)
+                    cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=20, color=color, thickness=-1)  
                 # #########
                 # 
                 # Use the information in topography(T.img) to determine the type of  TVE_states's topography type
@@ -299,11 +308,11 @@ class Build_State():
                 # ##########
                 # type 0
                 self.TVE_states_ij[y][x][2] = self.E_img[int(pen_y)][int(pen_x_)][0]
-                cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=T_color, thickness=2)
+                cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=5, color=T_color, thickness=-2)
 
-                cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=2, color=V_color, thickness=2)
-                cv2.putText(self.T_img_copy, str(y*self.W_num + x), (int(pen_x_), int(pen_y)), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (50, 170, 50), 2)
+                cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=5, color=V_color, thickness=-2)
+                # cv2.putText(self.T_img_copy, str(y*self.W_num + x), (int(pen_x_), int(pen_y)), 
+                #     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
                 pen_x_ += 3 * self.r # r * math.sqrt(3)
                 # print("x, y = ", x, y)
@@ -340,17 +349,7 @@ class Build_State():
 
 
 
-
-
-
-
-  
-
-
-
-
-
-
+# The transformation of the index format
 def ij2index(i, j):
     W_num =19
     # Cells that are not on the map are set to a negative index
@@ -358,12 +357,17 @@ def ij2index(i, j):
         return -abs(W_num * i + j)
     return W_num * i + j
 
+# The transformation of the index format
 def index2ij(index_cell):
     W_num = 19
     return  index_cell // W_num, index_cell % W_num
 
+
+# Use an index value to find the surrounding 7 index values(include itself)
 def find_7index(index):
     """    
+    index(int): 353
+
     return:
         ij_7s : 7x2 like  [[i, j], [i,j] ....]
         index_7s : 7 index
@@ -379,8 +383,9 @@ def find_7index(index):
 
     # ##########
     # if index out of range,  set -1
+    # When the number of rows is odd and even, the law of index is different
     # ########
-    if i % 2 == 1:
+    if i % 2 == 1:  
         ij_7s[0][0], ij_7s[0][1] = i, j
         ij_7s[1][0], ij_7s[1][1] =  i + 2, j  
         ij_7s[2][0], ij_7s[2][1] =  i + 1, j + 1 
@@ -407,7 +412,7 @@ def find_7index(index):
 
 
 
-
+# Show probability maps in the form of 3D plots
 def show_probility_img3D(img):
     img = cv2.resize(img,(1000, 500))
 
@@ -416,6 +421,9 @@ def show_probility_img3D(img):
     max_p = np.max(img)
     min_p = np.min(img)
     print("max_p , min_p", max_p , min_p)
+
+    # In order to ensure the final image is beautiful, 
+    # the value (probability) of the image should be normalized.
     b = np.array(255 * (b - min_p)/(max_p - min_p)).astype(np.uint8)
 
     fig = plt.figure()
@@ -427,6 +435,8 @@ def show_probility_img3D(img):
     # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
     ax.plot_surface(Y, X, Z, cmap='rainbow')
     plt.show()        
+
+
 
 
 
