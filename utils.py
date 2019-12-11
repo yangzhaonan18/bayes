@@ -311,8 +311,8 @@ class Build_State():
                 cv2.circle(self.T_img_copy, (int(pen_x_), int(pen_y)), radius=5, color=T_color, thickness=-2)
 
                 cv2.circle(self.V_img_copy, (int(pen_x_), int(pen_y)), radius=5, color=V_color, thickness=-2)
-                # cv2.putText(self.T_img_copy, str(y*self.W_num + x), (int(pen_x_), int(pen_y)), 
-                #     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.putText(self.T_img_copy, str(y*self.W_num + x), (int(pen_x_), int(pen_y)), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
 
                 pen_x_ += 3 * self.r # r * math.sqrt(3)
                 # print("x, y = ", x, y)
@@ -335,13 +335,14 @@ class Build_State():
         Z = np.array(b)
         # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
         ax.plot_surface(Y, X, Z, cmap='rainbow')
+        plt.title("elevation")
         plt.show()
 
-
+    # # "topography":"vegetation":"slope":elevation
     #  topography, vegetation. each have three types
     def show_TV_img2D(self):
-        cv2.imshow("T_img_copy", self.T_img_copy)
-        cv2.imshow("V_img_copy", self.V_img_copy)
+        cv2.imshow("topography", self.T_img_copy)
+        cv2.imshow("vegetation", self.V_img_copy)
         # cv2.waitKey(5000)  
         k = cv2.waitKey(0) 
         if k ==27:   

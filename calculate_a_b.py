@@ -208,7 +208,7 @@ if __name__ ==  "__main__":
     # 
 
     build_State = Build_State(T_path, V_path, E_path)
-    # build_State.show_TV_img2D()
+    build_State.show_TV_img2D()
     build_State.show_E_img3D()
     # states_ij = build_State.TVE_states_ij
     states_index = build_State.TVE_states_index
