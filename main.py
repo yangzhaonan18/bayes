@@ -9,7 +9,7 @@ from tqdm import tqdm
 import random
 import cv2
 from calculate_a_b import get_states_index_random
-
+from utils import show_probility_img3D
 
 alphas = np.load("./data_npy/alphas.npy")
 betas = np.load("./data_npy/betas.npy")
@@ -100,7 +100,7 @@ p_data = np.reshape(p_data,(32, 19))
 b = p_data * 255
 img = cv2.merge([b, b, b])
 print("\nPosterior predictive distribution")
-show_probility_img3D(img)    
+show_probility_img3D(img , title_name="Posterior predictive distribution")    
 
 
 # ##############

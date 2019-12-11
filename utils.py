@@ -413,7 +413,7 @@ def find_7index(index):
 
 
 # Show probability maps in the form of 3D plots
-def show_probility_img3D(img):
+def show_probility_img3D(img, title_name="title"):
     img = cv2.resize(img,(1000, 500))
 
     b, _, _ = cv2.split(img)
@@ -434,6 +434,7 @@ def show_probility_img3D(img):
     Z = np.array(b)
     # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
     ax.plot_surface(Y, X, Z, cmap='rainbow')
+    plt.title(title_name)
     plt.show()        
 
 

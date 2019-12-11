@@ -291,7 +291,7 @@ if __name__ ==  "__main__":
         b = p_data * 255
         img = cv2.merge([b, b, b])
         print("\nPrior predictive distribution")
-        show_probility_img3D(img)    
+        show_probility_img3D(img, title_name="Prior predictive distribution")    
         
 
 
