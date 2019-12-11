@@ -7,7 +7,12 @@ from gibbs import Gibbs_M_H_sampler
  
 from tqdm import tqdm 
 import random
+try:
+	sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+except:
+	pass
 import cv2
+
 from calculate_a_b import get_states_index_random
 from utils import show_probility_img3D
 

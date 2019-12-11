@@ -1,6 +1,12 @@
 import numpy as np
 import math
+import sys
+try:
+    sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+except:
+    pass
 import cv2
+
 
 from utils import Transfer_matrix, Build_State, find_7index, show_probility_img3D
 from tqdm import tqdm

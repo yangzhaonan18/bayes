@@ -1,9 +1,15 @@
 
 import numpy as np
 import math
+import sys
+try:
+	sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+except:
+	pass
 import cv2
+
 import copy
-import gdal
+# import gdal
 
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
