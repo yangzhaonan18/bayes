@@ -49,6 +49,7 @@ if flag:
 
     plt.figure(figsize=(15, 7))
     for i in range(21):
+    # for i in [2, 12, 13, 20]:
         plt.subplot(7, 3, i+1)
         plt.hist(samples_matrix[:, i], bins=100, color='red',histtype='stepfilled',alpha=0.75)
         a, b = float(alphas[i]), float(betas[i])

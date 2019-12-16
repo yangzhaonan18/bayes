@@ -40,11 +40,13 @@ def show_one():
 	names = ["T00","T01","T02","T10","T11","T12","T20","T21","T22",
 			 "V00","V01","V02","V10","V11","V12","V20","V21","V22",
 			"S0","S1","S2"]
-	for  i in range(21):
+	# for  i in range(21):
+	plt.figure()
+	for j, i in enumerate([2, 12, 13, 20]):
 		name = names[i]
-		plt.figure()
+		
 		# i = 1
-		# plt.subplot(7, 3, i+1)
+		plt.subplot(2, 2, j+1)
 		sns.distplot(samples_matrix[:, i], hist=False, color='red',label="Marginal posterior of " + name)
 
 
@@ -54,7 +56,7 @@ def show_one():
 		plt.plot(x, beta.pdf(x, a, b), 'b--', lw=2, alpha=0.6, label='Priori of ' + name)
 		plt.legend()
 		plt.title('%s' % i)
-		plt.show()
+	# plt.show()
 
 
 if __name__ == "__main__":
@@ -66,7 +68,7 @@ if __name__ == "__main__":
 	df = pd.DataFrame(samples_matrix)
 	 
 	dfData = df.corr() 
-	plt.subplots(figsize=(9, 9)) # ÉèÖÃ»­Ãæ´óÐ¡
+	plt.subplots(figsize=(9, 9))  
 	# sns.heatmap(dfData, vmax=128, annot=True, square=True, cmap="gist_gray")
 	sns.heatmap(dfData, vmax=0.1, square=True, cmap="gist_gray")
 	# plt.savefig('./BluesStateRelation.png')
