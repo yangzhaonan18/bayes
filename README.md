@@ -15,5 +15,12 @@ bash demo1_data_priori.sh
 ### 后验概率分布图
 
 ```bash
-demo2_posterior.sh
+bash demo2_posterior.sh
 ```
+
+### marginal posterior
+
+```bash
+bash demo3_marginal_posterior.sh
+```
+
